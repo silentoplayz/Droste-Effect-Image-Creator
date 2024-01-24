@@ -12,7 +12,7 @@ Before using this script, please ensure you have the following installed:
 1. **Clone the Repository:**
    ```bash
    git clone https://github.com/Silentoplayz/Droste-Effect-Image-Creator.git
-   cd Droste-image-effect-creator
+   cd Droste-Effect-Image-creator
    ```
 
 # **Install Dependencies**
