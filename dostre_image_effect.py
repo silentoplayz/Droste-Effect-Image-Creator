@@ -23,8 +23,13 @@ def create_dostre_image_effect(image_path, output_path, shrink_factor, max_itera
         with tempfile.TemporaryDirectory() as temp_dir:
             frame_paths = []
 
-            for iteration in range(max_iterations):
-                print(f"Processing iteration {iteration + 1}...")
+            # Save the original image as the first frame
+            frame_path = os.path.join(temp_dir, f"frame_0.{frame_format}")
+            original_image.save(frame_path)
+            frame_paths.append(frame_path)
+
+            for iteration in range(1, max_iterations):  # Start from 1 since original image is already saved
+                print(f"Processing iteration {iteration}...")
 
                 # Calculate the new size
                 new_width = int(current_size[0] * shrink_factor)
