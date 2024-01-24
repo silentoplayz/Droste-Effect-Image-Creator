@@ -46,4 +46,4 @@ This project is licensed under the MIT License - see the LICENSE.txt file for de
 # Acknowledgments
 This script uses the Pillow and MoviePy libraries.
 
-Read this README again and again: [README](https://github.com/Silentoplayz/Recursive-Mirror-Effect-Generator-For-Images/edit/main/README.md)
+Read this README again and again: [README](https://github.com/Silentoplayz/Recursive-Mirror-Effect-Generator-For-Images/blob/main/README.md)
