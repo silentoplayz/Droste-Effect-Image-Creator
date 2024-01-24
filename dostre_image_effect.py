@@ -27,7 +27,7 @@ def create_dostre_image_effect(image_path, output_path, shrink_factor, max_itera
 
             # Save the original image as the first frame
             frame_path = os.path.join(temp_dir, f"frame_0.{frame_format}")
-            original_image.save(frame_path)
+            save_image_with_format(original_image, frame_path, frame_format)
             frame_paths.append(frame_path)
 
             for iteration in range(1, max_iterations):
@@ -69,11 +69,11 @@ def create_dostre_image_effect(image_path, output_path, shrink_factor, max_itera
 
                 # Save the frame with user-specified frame format
                 frame_path = os.path.join(temp_dir, f"frame_{iteration}.{frame_format}")
-                original_image.save(frame_path)
+                save_image_with_format(original_image, frame_path, frame_format)
                 frame_paths.append(frame_path)
 
-            # Save the final image, consider PNG for lossless output
-            original_image.save(output_path, quality=100)
+            # Save the final image
+            save_image_with_format(original_image, output_path, frame_format)
             print("Image processing complete.")
 
             # Create the time-lapse video if required
@@ -102,6 +102,18 @@ def create_dostre_image_effect(image_path, output_path, shrink_factor, max_itera
 
     except Exception as e:
         print(f"An error occurred during image processing: {e}")
+
+def save_image_with_format(image, path, format):
+    # Check if the frame format is JPEG or JPG and the image mode is RGBA
+    if format in ['jpeg', 'jpg']:
+        # Convert to RGB before saving if necessary
+        if image.mode == 'RGBA':
+            image = image.convert('RGB')
+        # Save with high quality
+        image.save(path, quality=100)
+    else:
+        # Save in the current mode for other formats
+        image.save(path)
 
 def create_timelapse_video(frame_paths, output_filename, fps, include_reverse):
     try:
