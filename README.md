@@ -1,5 +1,5 @@
-# Dostre Effect Image Creator
-Transform ordinary images into extraordinary works of art with the mesmerizing Dostre Effect using this Python script. The script applies a recursive mirror effect to a selected image, producing a unique and captivating visual pattern. It systematically reduces the image size in each iteration and overlays these smaller versions onto the original, creating a concentric, mirrored design. Customize parameters like the shrink factor and maximum iterations for varied artistic expressions. The script even allows you to generate a timelapse video of the transformation process, complete with reverse playback for a seamless looping effect. Ideal for artists and programmers alike, this script is a simple yet powerful way to explore new dimensions in image processing.
+# Droste Effect Image Creator
+Transform ordinary images into extraordinary works of art with the mesmerizing Droste Effect using this Python script. The script applies a recursive mirror effect to a selected image, producing a unique and captivating visual pattern. It systematically reduces the image size in each iteration and overlays these smaller versions onto the original, creating a concentric, mirrored design. Customize parameters like the shrink factor and maximum iterations for varied artistic expressions. The script even allows you to generate a timelapse video of the transformation process, complete with reverse playback for a seamless looping effect. Ideal for artists and programmers alike, this script is a simple yet powerful way to explore new dimensions in image processing.
 
 ## Prerequisites
 Before using this script, please ensure you have the following installed:
@@ -11,8 +11,8 @@ Before using this script, please ensure you have the following installed:
 ## Usage
 1. **Clone the Repository:**
    ```bash
-   git clone https://github.com/Silentoplayz/Dostre-Effect-Image-Creator.git
-   cd dostre-image-effect-creator
+   git clone https://github.com/Silentoplayz/Droste-Effect-Image-Creator.git
+   cd Droste-image-effect-creator
    ```
 
 # **Install Dependencies**
@@ -22,7 +22,7 @@ Before using this script, please ensure you have the following installed:
 
 # **Run the Script:**
   ```python
-  python dostre_image_effect.py
+  python droste_image_effect.py
   ```
 **Follow the on-screen prompts to select an image and input parameters.**
 
@@ -52,4 +52,4 @@ This project is licensed under the MIT License - see the LICENSE.txt file for de
 # Acknowledgments
 This script uses the Pillow and MoviePy libraries.
 
-Read this README again and again: [README](https://github.com/Silentoplayz/Recursive-Mirror-Effect-Generator-For-Images/blob/main/README.md)
+Read this README again and again: [README]([https://github.com/Silentoplayz/Droste-Effect-Image-Creator/blob/main/README.md)
