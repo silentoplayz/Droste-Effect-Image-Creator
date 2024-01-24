@@ -38,6 +38,7 @@ Before using this script, please ensure you have the following installed:
 | Save Reversed Clip (yes/no)       | Choose whether to save the reversed clip separately. Respond 'yes' to save a reversed clip showing the image sequence in reverse. |
 | Image Resampling Method (string)  | Select the resampling method for image processing (e.g., 'NEAREST', 'BOX', 'BILINEAR', 'HAMMING', 'BICUBIC', 'LANCZOS').                                    |
 | Frame Format (string)             | Choose the format for saving frames during image processing (e.g., 'png', 'jpg', 'jpeg', 'bmp').                                   |
+| Rotation Angle (float)            | Enter the rotation angle per iteration (e.g., 10 degrees) to apply a cumulative rotation effect to each image iteration. |
 
 # Output
 The final processed image is saved as `output_{unique_suffix}.png` in the script's directory. If you choose to save a timelapse video, it will be saved as `time_lapse_{unique_suffix}.mp4`. If you opt to save the reversed clip separately, it will be named `reversed_clip_{unique_suffix}.mp4`.
