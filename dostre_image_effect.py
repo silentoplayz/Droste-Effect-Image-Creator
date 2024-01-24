@@ -7,7 +7,7 @@ from tkinter import filedialog, simpledialog
 from PIL import Image
 from moviepy.editor import ImageSequenceClip, concatenate_videoclips, vfx
 
-def create_dostre_image_effect(image_path, output_path, shrink_factor, max_iterations, save_timelapse, fps, include_reverse, timelapse_video_path, reversed_clip_path, save_reversed_clip, unique_suffix):
+def create_dostre_image_effect(image_path, output_path, shrink_factor, max_iterations, save_timelapse, fps, include_reverse, timelapse_video_path, reversed_clip_path, save_reversed_clip, unique_suffix, resampling_method, frame_format):
     try:
         # Load the original image
         original_image = Image.open(image_path)
@@ -35,8 +35,8 @@ def create_dostre_image_effect(image_path, output_path, shrink_factor, max_itera
                     print("Image has become too small to process further.")
                     break
 
-                # Resize the image with high-quality resampling
-                resized_image = current_image.resize((new_width, new_height), Image.Resampling.LANCZOS)
+                # Resize the image with user-specified resampling method
+                resized_image = current_image.resize((new_width, new_height), getattr(Image.Resampling, resampling_method))
                 # Calculate the position to paste the resized image
                 paste_x = (original_image.size[0] - new_width) // 2
                 paste_y = (original_image.size[1] - new_height) // 2
@@ -44,8 +44,8 @@ def create_dostre_image_effect(image_path, output_path, shrink_factor, max_itera
                 original_image.paste(resized_image, (paste_x, paste_y))
                 # Update the current size for the next iteration
                 current_size = (new_width, new_height)
-                # Save the frame
-                frame_path = os.path.join(temp_dir, f"frame_{iteration}.png")
+                # Save the frame with user-specified frame format
+                frame_path = os.path.join(temp_dir, f"frame_{iteration}.{frame_format}")
                 original_image.save(frame_path)
                 frame_paths.append(frame_path)
 
@@ -63,6 +63,18 @@ def create_dostre_image_effect(image_path, output_path, shrink_factor, max_itera
                     reversed_clip_path = f"reversed_clip_{unique_suffix}.mp4"
                     create_timelapse_video(frame_paths[::-1], reversed_clip_path, fps, False)
                     print(f"Reversed clip saved as {reversed_clip_path}")
+
+            # Display the chosen parameters
+            print("\nChosen Parameters:")
+            print(f"Shrink Factor: {shrink_factor}")
+            print(f"Max Iterations: {max_iterations}")
+            print(f"Save Timelapse: {save_timelapse}")
+            if save_timelapse:
+                print(f"FPS for Timelapse: {fps}")
+                print(f"Include Reverse: {include_reverse}")
+                print(f"Save Reversed Clip: {save_reversed_clip}")
+            print(f"Image Resampling Method: {resampling_method}")
+            print(f"Frame Format: {frame_format}")
 
     except Exception as e:
         print(f"An error occurred during image processing: {e}")
@@ -134,11 +146,27 @@ def main():
             # Ask the user if they want to save the reversed clip by itself
             save_reversed_clip = simpledialog.askstring("Input", "Save reversed clip by itself? (yes/no):", parent=root).lower() == 'yes'
 
+        # Image Resampling Method
+        resampling_options = ['NEAREST', 'BOX', 'BILINEAR', 'HAMMING', 'BICUBIC', 'LANCZOS']
+        resampling_method = simpledialog.askstring("Input", f"Enter Image Resampling Method (choose from {', '.join(resampling_options)}):", parent=root).upper()
+
+        # Frame Format
+        frame_format_options = ['png', 'jpg', 'jpeg', 'bmp']
+        frame_format = simpledialog.askstring("Input", f"Enter Frame Format (choose from {', '.join(frame_format_options)}):", parent=root).lower()
+
+        # Validate user input for Image Resampling Method
+        if resampling_method not in resampling_options:
+            raise ValueError(f"Invalid resampling method. Please choose from {', '.join(resampling_options)}.")
+
+        # Validate user input for Frame Format
+        if frame_format not in frame_format_options:
+            raise ValueError(f"Invalid frame format. Please choose from {', '.join(frame_format_options)}.")
+
         # Get the base filename without extension
         base_filename = os.path.splitext(os.path.basename(file_path))[0]
         timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
         unique_suffix = f"{base_filename}_{timestamp}"
-        output_image_path = f"output_{unique_suffix}.png"
+        output_image_path = f"output_{unique_suffix}.{frame_format}"
         timelapse_video_path = f"time_lapse_{unique_suffix}.mp4" if save_timelapse else None
         reversed_clip_path = f"reversed_clip_{unique_suffix}.mp4" if save_reversed_clip else None
 
@@ -146,7 +174,8 @@ def main():
         create_dostre_image_effect(
             file_path, output_image_path, shrink_factor, max_iterations,
             save_timelapse, fps, include_reverse, timelapse_video_path,
-            reversed_clip_path, save_reversed_clip, unique_suffix
+            reversed_clip_path, save_reversed_clip, unique_suffix,
+            resampling_method, frame_format
         )
         print(f"Image saved as {output_image_path}")
 
@@ -158,6 +187,8 @@ def main():
 
     except tk.TclError as te:
         print(f"An error occurred during image selection: {te}")
+    except ValueError as ve:
+        print(f"Input validation error: {ve}")
     except Exception as e:
         print(f"An error occurred: {e}")
 
