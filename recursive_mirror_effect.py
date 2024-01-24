@@ -2,10 +2,10 @@ from PIL import Image
 import tkinter as tk
 from tkinter import filedialog, simpledialog
 import os
-from moviepy.editor import ImageSequenceClip
+from moviepy.editor import ImageSequenceClip, concatenate_videoclips, vfx
 import tempfile
 
-def create_recursive_mirror_effect(image_path, output_path, shrink_factor, max_iterations, save_timelapse, fps):
+def create_recursive_mirror_effect(image_path, output_path, shrink_factor, max_iterations, save_timelapse, fps, include_reverse):
     try:
         # Load the original image
         original_image = Image.open(image_path)
@@ -35,17 +35,13 @@ def create_recursive_mirror_effect(image_path, output_path, shrink_factor, max_i
 
                 # Resize the image with high-quality resampling
                 resized_image = current_image.resize((new_width, new_height), Image.Resampling.LANCZOS)
-
                 # Calculate the position to paste the resized image
                 paste_x = (original_image.size[0] - new_width) // 2
                 paste_y = (original_image.size[1] - new_height) // 2
-
                 # Paste the resized image onto the original image, centered
                 original_image.paste(resized_image, (paste_x, paste_y))
-
                 # Update the current size for the next iteration
                 current_size = (new_width, new_height)
-
                 # Save the frame
                 frame_path = os.path.join(temp_dir, f"frame_{iteration}.png")
                 original_image.save(frame_path)
@@ -58,17 +54,26 @@ def create_recursive_mirror_effect(image_path, output_path, shrink_factor, max_i
             # Create the time-lapse video if required
             if save_timelapse:
                 timelapse_output_filename = "time_lapse.mp4"
-                create_timelapse_video(frame_paths, timelapse_output_filename, fps)
+                create_timelapse_video(frame_paths, timelapse_output_filename, fps, include_reverse)
                 print(f"Time-lapse video saved as {timelapse_output_filename}")
     except Exception as e:
         print(f"An error occurred during image processing: {e}")
 
-def create_timelapse_video(frame_paths, output_filename, fps):
+def create_timelapse_video(frame_paths, output_filename, fps, include_reverse):
     try:
         # Create a clip from the frames
         clip = ImageSequenceClip(frame_paths, fps=fps)
-        # Write the clip to a file
-        clip.write_videofile(output_filename, codec='libx264')
+
+        if include_reverse:
+            # Create a reversed clip
+            reversed_clip = clip.fx(vfx.time_mirror)
+            # Concatenate the original clip with the reversed clip
+            final_clip = concatenate_videoclips([clip, reversed_clip])
+        else:
+            final_clip = clip
+
+        # Write the final clip to a file
+        final_clip.write_videofile(output_filename, codec='libx264')
     except Exception as e:
         print(f"An error occurred during video creation: {e}")
 
@@ -105,14 +110,25 @@ def main():
         # FPS (Frames Per Second) for the timelapse video.
         # This determines how many frames are shown per second in the timelapse video.
         # A higher FPS results in a smoother video.
-        fps = simpledialog.askinteger("Input", "Enter FPS for timelapse (e.g., 10):", parent=root, minvalue=1)
+        fps = None
 
+        # This variable controls whether the reversed clip is included in the timelapse video.
+        # Including the reversed clip creates a seamless loop effect in the video.
+        include_reverse = False
+
+        if save_timelapse:
+            # Ask the user for the FPS value if they have chosen to save a timelapse video.
+            fps = simpledialog.askinteger("Input", "Enter FPS for timelapse (e.g., 10):", parent=root, minvalue=1)
+
+            # Ask the user if they want to include the reversed clip in the timelapse video.
+            # A 'yes' response will result in the timelapse video showing the image sequence forwards and then in reverse.
+            include_reverse = simpledialog.askstring("Input", "Include reversed clip in video? (yes/no):", parent=root).lower() == 'yes'
 
         # Define the output path (same as script's directory)
         output_path = "output_image.png"  # Changed to PNG
 
         # Create the recursive mirror effect
-        create_recursive_mirror_effect(file_path, output_path, shrink_factor, max_iterations, save_timelapse, fps)
+        create_recursive_mirror_effect(file_path, output_path, shrink_factor, max_iterations, save_timelapse, fps, include_reverse)
         print(f"Image saved as {output_path}")
     except Exception as e:
         print(f"An error occurred: {e}")
