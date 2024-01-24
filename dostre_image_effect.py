@@ -96,8 +96,7 @@ def main():
         # Open a file dialog to select an image
         file_path = filedialog.askopenfilename(title="Select an Image", filetypes=[("Image Files", "*.png;*.jpg;*.jpeg;*.bmp")])
         if not file_path:
-            print("No file selected.")
-            return
+            raise ValueError("No file selected. Exiting the program.")
 
         # Get parameters from the user
 
@@ -156,6 +155,8 @@ def main():
         if save_reversed_clip:
             print(f"Reversed clip saved as {reversed_clip_path}")
 
+    except tk.TclError as te:
+        print(f"An error occurred during image selection: {te}")
     except Exception as e:
         print(f"An error occurred: {e}")
 
