@@ -1,5 +1,5 @@
-# Recursive Mirror Effect Generator
-The Recursive Mirror Effect Generator is a Python script that applies a recursive mirror effect to an input image, creating an artistic and visually interesting result. It shrinks and pastes iterations of the image onto itself, producing a mirrored and progressively smaller pattern.
+# Recursive Mirror Effect Generator For Images
+This is a Python script that applies a recursive mirror effect to an input image, creating an artistic and visually interesting result. It shrinks and pastes iterations of the image onto itself, producing a mirrored and progressively smaller pattern.
 
 ## Prerequisites
 Before using this script, make sure you have the following installed:
