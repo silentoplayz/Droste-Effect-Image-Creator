@@ -1,8 +1,8 @@
-# Recursive Mirror Effect Generator For Images
-This Python script implements a recursive mirror effect on a selected image, producing a unique and captivating visual pattern. It methodically reduces the size of the image in each iteration and overlays these smaller versions onto the original, creating a concentric, mirrored design. The script offers customizable parameters such as shrink factor and maximum iterations, allowing for varied artistic expressions. Additionally, it features an option to generate a timelapse video of the transformation process, which can include a reverse playback segment for a seamless looping effect.
+# Dostre Effect Image Creator
+Transform your images with the mesmerizing Dostre Effect using this Python script. The script applies a recursive mirror effect to a selected image, producing a unique and captivating visual pattern. It systematically reduces the image size in each iteration and overlays these smaller versions onto the original, creating a concentric, mirrored design. Customize parameters like the shrink factor and maximum iterations for varied artistic expressions. The script even allows you to generate a timelapse video of the transformation process, complete with reverse playback for a seamless looping effect.
 
 ## Prerequisites
-Before using this script, make sure you have the following installed:
+Before using this script, please ensure you have the following installed:
 
 - Python 3.x
 - MoviePy library (`pip install moviepy`)
