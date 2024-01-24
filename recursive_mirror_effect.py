@@ -4,8 +4,9 @@ from tkinter import filedialog, simpledialog
 import os
 from moviepy.editor import ImageSequenceClip, concatenate_videoclips, vfx
 import tempfile
+import datetime
 
-def create_recursive_mirror_effect(image_path, output_path, shrink_factor, max_iterations, save_timelapse, fps, include_reverse):
+def create_recursive_mirror_effect(image_path, output_path, shrink_factor, max_iterations, save_timelapse, fps, include_reverse, timelapse_video_path):
     try:
         # Load the original image
         original_image = Image.open(image_path)
@@ -53,9 +54,8 @@ def create_recursive_mirror_effect(image_path, output_path, shrink_factor, max_i
 
             # Create the time-lapse video if required
             if save_timelapse:
-                timelapse_output_filename = "time_lapse.mp4"
-                create_timelapse_video(frame_paths, timelapse_output_filename, fps, include_reverse)
-                print(f"Time-lapse video saved as {timelapse_output_filename}")
+                create_timelapse_video(frame_paths, timelapse_video_path, fps, include_reverse)
+                print(f"Time-lapse video saved as {timelapse_video_path}")
     except Exception as e:
         print(f"An error occurred during image processing: {e}")
 
@@ -124,12 +124,20 @@ def main():
             # A 'yes' response will result in the timelapse video showing the image sequence forwards and then in reverse.
             include_reverse = simpledialog.askstring("Input", "Include reversed clip in video? (yes/no):", parent=root).lower() == 'yes'
 
-        # Define the output path (same as script's directory)
-        output_path = "output_image.png"  # Changed to PNG
+        # Get the base filename without extension
+        base_filename = os.path.splitext(os.path.basename(file_path))[0]
+        timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+        unique_suffix = f"{base_filename}_{timestamp}"
+        output_image_path = f"output_{unique_suffix}.png"
+        timelapse_video_path = f"time_lapse_{unique_suffix}.mp4" if save_timelapse else None
 
         # Create the recursive mirror effect
-        create_recursive_mirror_effect(file_path, output_path, shrink_factor, max_iterations, save_timelapse, fps, include_reverse)
-        print(f"Image saved as {output_path}")
+        create_recursive_mirror_effect(file_path, output_image_path, shrink_factor, max_iterations, save_timelapse, fps, include_reverse, timelapse_video_path)
+        print(f"Image saved as {output_image_path}")
+
+        if save_timelapse:
+            print(f"Time-lapse video saved as {timelapse_video_path}")
+
     except Exception as e:
         print(f"An error occurred: {e}")
 
