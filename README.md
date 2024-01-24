@@ -30,8 +30,8 @@ Before using this script, please ensure you have the following installed:
 
 | Parameter                     | Description                                                                                                       |
 |-------------------------------|-------------------------------------------------------------------------------------------------------------------|
-| Shrink Factor (float)         | Enter a shrink factor (e.g., 0.99) to determine how much each iteration of the image is reduced in size.         |
-| Max Iterations (integer)      | Set the maximum number of iterations. Higher values result in more repetitions of the shrinking and pasting process. |
+| Shrink Factor (float, required)| Enter a shrink factor (e.g., 0.99) to determine how much each iteration of the image is reduced in size.         |
+| Max Iterations (integer, required)| Set the maximum number of iterations. Higher values result in more repetitions of the shrinking and pasting process. |
 | Save Timelapse (yes/no)       | Specify whether to save a timelapse video of the image processing. Respond 'yes' to save a video showing each iteration. |
 | FPS for Timelapse (integer)   | Enter the Frames Per Second (FPS) for the timelapse video. Higher FPS results in a smoother video.                  |
 | Include Reverse (yes/no)      | Decide whether to include a reversed clip in the timelapse video, creating a seamless loop effect.                   |
