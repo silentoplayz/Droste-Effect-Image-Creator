@@ -11,8 +11,8 @@ Before using this script, please ensure you have the following installed:
 ## Usage
 1. **Clone the Repository:**
    ```bash
-   git clone https://github.com/Silentoplayz/Recursive-Mirror-Effect-Generator-For-Images.git
-   cd recursive-mirror-effect
+   git clone https://github.com/Silentoplayz/Dostre-Effect-Image-Creator.git
+   cd dostre-image-effect-creator
    ```
 
 # **Install Dependencies**
@@ -22,7 +22,7 @@ Before using this script, please ensure you have the following installed:
 
 # **Run the Script:**
   ```python
-  python recursive_mirror_effect.py
+  python dostre_image_effect.py
   ```
 **Follow the on-screen prompts to select an image and input parameters.**
 
