@@ -44,7 +44,7 @@ Before using this script, please ensure you have the following installed:
 The final processed image is saved as `output_{unique_suffix}.png` in the script's directory. If you choose to save a timelapse video, it will be saved as `time_lapse_{unique_suffix}.mp4`. If you opt to save the reversed clip separately, it will be named `reversed_clip_{unique_suffix}.mp4`.
 
 # Disclaimer
-**Each iteration of the image is processed sequentially, meaning the final outcome of your chosen parameters may not be immediately apparent. Therefore, I personally encourage experimentation with the parameters and and learning from the results to fine-tune the effect(s) to your preference. This iterative process is part of the creative journey, offering a hands-on experience in digital art creation.**
+**Please note that while each image iteration is processed sequentially, the impact of certain parameters, like the shrink factor, may be predictable to an extent. For example, a shrink factor of 0.99 will reduce the image size by 1% in each iteration. However, the overall outcome, especially for complex parameter combinations, can be fully appreciated only after the process is complete (meaning the final outcome of your chosen parameters may not be immediately apparent). Therefore, I personally encourage experimentation with the parameters and learning from the results to fine-tune the effect(s) to your preference. This iterative process is part of the creative journey, offering a hands-on experience in digital art creation.**
 
 # License
 This project is licensed under the MIT License - see the LICENSE.txt file for details.
