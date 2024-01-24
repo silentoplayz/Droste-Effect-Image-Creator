@@ -1,5 +1,5 @@
 # Dostre Effect Image Creator
-Transform your images with the mesmerizing Dostre Effect using this Python script. The script applies a recursive mirror effect to a selected image, producing a unique and captivating visual pattern. It systematically reduces the image size in each iteration and overlays these smaller versions onto the original, creating a concentric, mirrored design. Customize parameters like the shrink factor and maximum iterations for varied artistic expressions. The script even allows you to generate a timelapse video of the transformation process, complete with reverse playback for a seamless looping effect.
+Transform ordinary images into extraordinary works of art with the mesmerizing Dostre Effect using this Python script. The script applies a recursive mirror effect to a selected image, producing a unique and captivating visual pattern. It systematically reduces the image size in each iteration and overlays these smaller versions onto the original, creating a concentric, mirrored design. Customize parameters like the shrink factor and maximum iterations for varied artistic expressions. The script even allows you to generate a timelapse video of the transformation process, complete with reverse playback for a seamless looping effect. Ideal for artists and programmers alike, this script is a simple yet powerful way to explore new dimensions in image processing.
 
 ## Prerequisites
 Before using this script, please ensure you have the following installed:
@@ -42,6 +42,9 @@ Before using this script, please ensure you have the following installed:
 
 # Output
 The final processed image is saved as `output_{unique_suffix}.png` in the script's directory. If you choose to save a timelapse video, it will be saved as `time_lapse_{unique_suffix}.mp4`. If you opt to save the reversed clip separately, it will be named `reversed_clip_{unique_suffix}.mp4`.
+
+# Disclaimer
+**Each iteration of the image is processed sequentially, meaning the final outcome of your chosen parameters may not be immediately apparent. Therefore, I personally encourage experimentation with the parameters and and learning from the results to fine-tune the effect(s) to your preference. This iterative process is part of the creative journey, offering a hands-on experience in digital art creation.**
 
 # License
 This project is licensed under the MIT License - see the LICENSE.txt file for details.
