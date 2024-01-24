@@ -6,7 +6,7 @@ from moviepy.editor import ImageSequenceClip, concatenate_videoclips, vfx
 import tempfile
 import datetime
 
-def create_recursive_mirror_effect(image_path, output_path, shrink_factor, max_iterations, save_timelapse, fps, include_reverse, timelapse_video_path):
+def create_recursive_mirror_effect(image_path, output_path, shrink_factor, max_iterations, save_timelapse, fps, include_reverse, timelapse_video_path, reversed_clip_path, save_reversed_clip, unique_suffix):
     try:
         # Load the original image
         original_image = Image.open(image_path)
@@ -56,6 +56,13 @@ def create_recursive_mirror_effect(image_path, output_path, shrink_factor, max_i
             if save_timelapse:
                 create_timelapse_video(frame_paths, timelapse_video_path, fps, include_reverse)
                 print(f"Time-lapse video saved as {timelapse_video_path}")
+
+                # Create the reversed clip if required and save it separately
+                if save_reversed_clip:
+                    reversed_clip_path = f"reversed_clip_{unique_suffix}.mp4"
+                    create_timelapse_video(frame_paths[::-1], reversed_clip_path, fps, False)
+                    print(f"Reversed clip saved as {reversed_clip_path}")
+
     except Exception as e:
         print(f"An error occurred during image processing: {e}")
 
@@ -115,14 +122,17 @@ def main():
         # This variable controls whether the reversed clip is included in the timelapse video.
         # Including the reversed clip creates a seamless loop effect in the video.
         include_reverse = False
+        save_reversed_clip = False  # New parameter
 
         if save_timelapse:
             # Ask the user for the FPS value if they have chosen to save a timelapse video.
             fps = simpledialog.askinteger("Input", "Enter FPS for timelapse (e.g., 10):", parent=root, minvalue=1)
-
             # Ask the user if they want to include the reversed clip in the timelapse video.
             # A 'yes' response will result in the timelapse video showing the image sequence forwards and then in reverse.
             include_reverse = simpledialog.askstring("Input", "Include reversed clip in video? (yes/no):", parent=root).lower() == 'yes'
+
+            # Ask the user if they want to save the reversed clip by itself
+            save_reversed_clip = simpledialog.askstring("Input", "Save reversed clip by itself? (yes/no):", parent=root).lower() == 'yes'
 
         # Get the base filename without extension
         base_filename = os.path.splitext(os.path.basename(file_path))[0]
@@ -130,13 +140,21 @@ def main():
         unique_suffix = f"{base_filename}_{timestamp}"
         output_image_path = f"output_{unique_suffix}.png"
         timelapse_video_path = f"time_lapse_{unique_suffix}.mp4" if save_timelapse else None
+        reversed_clip_path = f"reversed_clip_{unique_suffix}.mp4" if save_reversed_clip else None
 
         # Create the recursive mirror effect
-        create_recursive_mirror_effect(file_path, output_image_path, shrink_factor, max_iterations, save_timelapse, fps, include_reverse, timelapse_video_path)
+        create_recursive_mirror_effect(
+            file_path, output_image_path, shrink_factor, max_iterations,
+            save_timelapse, fps, include_reverse, timelapse_video_path,
+            reversed_clip_path, save_reversed_clip, unique_suffix
+        )
         print(f"Image saved as {output_image_path}")
 
         if save_timelapse:
             print(f"Time-lapse video saved as {timelapse_video_path}")
+
+        if save_reversed_clip:
+            print(f"Reversed clip saved as {reversed_clip_path}")
 
     except Exception as e:
         print(f"An error occurred: {e}")
