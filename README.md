@@ -11,7 +11,7 @@ Before using this script, make sure you have the following installed:
 ## Usage
 1. **Clone the Repository:**
    ```bash
-   git clone https://github.com/your-username/recursive-mirror-effect.git
+   git clone https://github.com/Silentoplayz/Recursive-Mirror-Effect-Generator-For-Images.git
    cd recursive-mirror-effect
    ```
 
