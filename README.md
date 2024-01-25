@@ -51,6 +51,13 @@ Before using this script, please ensure you have the following installed:
 # Output
 The final processed image is saved as `output_{unique_suffix}.{frame_format}` in the script's directory. If you choose to save a timelapse video, it will be saved as `time_lapse_{unique_suffix}.mp4`. If you opt to save the reversed clip separately, it will be named `reversed_clip_{unique_suffix}.mp4`.
 
+# Output Examples:
+![output_photo-1607222337192-910fb1a5c661_20240124_160451](https://github.com/Silentoplayz/Droste-Effect-Image-Creator/assets/50341825/78788a25-9779-4a27-bfdd-0aae6694a6b7)
+
+https://github.com/Silentoplayz/Droste-Effect-Image-Creator/assets/50341825/3e0e0105-2a3f-49f6-8243-81ea9a0d196b
+
+https://github.com/Silentoplayz/Droste-Effect-Image-Creator/assets/50341825/06ef74e9-3ed1-44b6-9eb5-15eb2789d2f5
+
 # Disclaimer
 **Please note that while each image iteration is processed sequentially, the impact of certain parameters, like the shrink factor, may be predictable to an extent. For example, a shrink factor of 0.99 will reduce the image size by 1% in each iteration. However, the overall outcome, especially for complex parameter combinations, can be fully appreciated only after the process is complete (meaning the final outcome of your chosen parameters may not be immediately apparent). Therefore, I personally encourage experimentation with the parameters and learning from the results to fine-tune the effect(s) to your preference. This iterative process is part of the creative journey, offering a hands-on experience in digital art creation.**
 
