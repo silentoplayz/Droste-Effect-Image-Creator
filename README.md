@@ -9,11 +9,11 @@ Before using this script, please ensure you have the following installed:
 - Pillow library (`pip install Pillow`)
 
 ## Usage
-1. **Clone the Repository:**
-   ```bash
-   git clone https://github.com/Silentoplayz/Droste-Effect-Image-Creator.git
-   cd Droste-Effect-Image-creator
-   ```
+**Clone the Repository:**
+  ```bash
+  git clone https://github.com/Silentoplayz/Droste-Effect-Image-Creator.git
+  cd Droste-Effect-Image-creator
+  ```
 
 # **Install Dependencies**
   ```python
