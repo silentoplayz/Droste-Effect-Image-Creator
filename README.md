@@ -44,8 +44,8 @@ Before using this script, please ensure you have the following installed:
 | Include Reverse (yes/no)          | Decide whether to include a reversed clip in the timelapse video, creating a seamless loop effect.                   | `--include_reverse yes`                                  |
 | Save Reversed Clip (yes/no)       | Choose whether to save the reversed clip separately. Respond 'yes' to save a reversed clip showing the image sequence in reverse. | `--save_reversed_clip yes`                               |
 | Image Resampling Method (string)  | Select the resampling method for image processing (e.g., 'NEAREST', 'BOX', 'BILINEAR', 'HAMMING', 'BICUBIC', 'LANCZOS').                                    | `--resampling_method BILINEAR`                           |
-| Frame Format (string)             | Choose the format for saving frames during image processing (e.g., 'png', 'jpg', 'jpeg', 'bmp').                                   | `--frame_format png`                                     |
-| Rotation Angle (float)            | Enter the rotation angle per iteration (e.g., 10 degrees) to apply a cumulative rotation effect to each image iteration. | `--rotation_angle 10`                                    |
+| Frame Format (string)             | Choose the format for saving frames during image processing (e.g., 'png', 'jpg', 'jpeg', 'bmp', 'webp').                                   | `--frame_format png`                                     |
+| Rotation Angle (float)            | Enter the rotation angle per iteration (e.g., 10 degrees) to apply a cumulative rotation effect to each image iteration. Use a negative number to rotate the image clockwise. | `--rotation_angle 10`                                    |
 | `--image_path` (string) | Path to the input image.                                                                                         | `--image_path path/to/your/image.jpg`                                                      |
 
 # Output
