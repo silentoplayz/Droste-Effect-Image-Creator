@@ -195,7 +195,7 @@ def main():
             print("Please select an image file. This may take a few moments...")
 
             # Open a file dialog to select an image
-            file_path = filedialog.askopenfilename(title="Select an Image", filetypes=[("Image Files", "*.png;*.jpg;*.jpeg;*.bmp")])
+            file_path = filedialog.askopenfilename(title="Select an Image", filetypes=[("Image Files", "*.png;*.jpg;*.jpeg;*.bmp;*.webp")])
             if not file_path:
                 raise ValueError("No file selected. Exiting the program.")
 
@@ -229,7 +229,7 @@ def main():
             resampling_method = simpledialog.askstring("Input", f"Enter Image Resampling Method (choose from {', '.join(resampling_options)}):", parent=root).upper()
 
             # Frame Format: Select the format for saving frames (supports PNG, JPG, JPEG, BMP).
-            frame_format_options = ['png', 'jpg', 'jpeg', 'bmp']
+            frame_format_options = ['png', 'jpg', 'jpeg', 'bmp', 'webp']
             frame_format = simpledialog.askstring("Input", f"Enter Frame Format (choose from {', '.join(frame_format_options)}):", parent=root).lower()
 
             # Rotation Angle: Define the angle of rotation applied to each image iteration.
