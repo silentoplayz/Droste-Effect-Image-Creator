@@ -17,7 +17,7 @@ Before using this script, please ensure you have the following installed:
 
 # **Install Dependencies**
   ```python
-  pip install requirements.txt
+  pip install -r requirements.txt
   ```
 
 # **Run the Script:**
