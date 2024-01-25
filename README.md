@@ -17,7 +17,7 @@ Before using this script, please ensure you have the following installed:
 
 # **Install Dependencies**
   ```python
-  pip install -r requirements.txt
+  pip install requirements.txt
   ```
 
 # **Run the Script:**
@@ -67,4 +67,4 @@ This project is licensed under the MIT License - see the LICENSE.txt file for de
 # Acknowledgments
 This script uses the Pillow and MoviePy libraries.
 
-Read this README again and again: [README]([https://github.com/Silentoplayz/Droste-Effect-Image-Creator/blob/main/README.md)
+Read this README again and again: ![README]([https://github.com/Silentoplayz/Droste-Effect-Image-Creator/blob/main/README.md)
