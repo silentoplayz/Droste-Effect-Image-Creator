@@ -62,7 +62,7 @@ https://github.com/Silentoplayz/Droste-Effect-Image-Creator/assets/50341825/06ef
 **Please note that while each image iteration is processed sequentially, the impact of certain parameters, like the shrink factor, may be predictable to an extent. For example, a shrink factor of 0.99 will reduce the image size by 1% in each iteration. However, the overall outcome, especially for complex parameter combinations, can be fully appreciated only after the process is complete (meaning the final outcome of your chosen parameters may not be immediately apparent). Therefore, I personally encourage experimentation with the parameters and learning from the results to fine-tune the effect(s) to your preference. This iterative process is part of the creative journey, offering a hands-on experience in digital art creation.**
 
 # License
-This project is licensed under the MIT License - see the LICENSE.txt file for details.
+This project is licensed under the MIT License - see the ![LICENSE file](https://github.com/Silentoplayz/Droste-Effect-Image-Creator/blob/main/LICENSE) for details.
 
 # Acknowledgments
 This script uses the Pillow and MoviePy libraries.
