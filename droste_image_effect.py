@@ -1,6 +1,7 @@
 import argparse
 import datetime
 import os
+import sys
 import tempfile
 import tkinter as tk
 import traceback
@@ -28,7 +29,10 @@ def create_droste_image_effect(image_path, output_path, shrink_factor, max_itera
 
             # Save the original image as the first frame
             frame_path = os.path.join(temp_dir, f"frame_0.{frame_format}")
-            save_image_with_format(original_image, frame_path, frame_format)
+            if not save_image_with_format(original_image, frame_path, frame_format):
+                print("Failed to save the initial frame.")
+                return
+
             frame_paths.append(frame_path)
 
             for iteration in range(1, max_iterations):
@@ -70,23 +74,33 @@ def create_droste_image_effect(image_path, output_path, shrink_factor, max_itera
 
                 # Save the frame with user-specified frame format
                 frame_path = os.path.join(temp_dir, f"frame_{iteration}.{frame_format}")
-                save_image_with_format(original_image, frame_path, frame_format)
+                if not save_image_with_format(original_image, frame_path, frame_format):
+                    print(f"Failed to save frame {iteration}.")
+                    return
+
                 frame_paths.append(frame_path)
 
             # Save the final image
-            save_image_with_format(original_image, output_path, frame_format)
+            if not save_image_with_format(original_image, output_path, frame_format):
+                print("Failed to save the final image.")
+                return
+
             print("Image processing complete.")
 
             # Create the time-lapse video if required
             if save_timelapse:
-                create_timelapse_video(frame_paths, timelapse_video_path, fps, include_reverse)
-                print(f"Time-lapse video saved as {timelapse_video_path}")
+                if not create_timelapse_video(frame_paths, timelapse_video_path, fps, include_reverse):
+                    print("Failed to create the time-lapse video.")
+                else:
+                    print(f"Time-lapse video saved as {timelapse_video_path}")
 
                 # Create the reversed clip if required and save it separately
                 if save_reversed_clip:
                     reversed_clip_path = f"reversed_clip_{unique_suffix}.mp4"
-                    create_timelapse_video(frame_paths[::-1], reversed_clip_path, fps, False)
-                    print(f"Reversed clip saved as {reversed_clip_path}")
+                    if not create_timelapse_video(frame_paths[::-1], reversed_clip_path, fps, False):
+                        print("Failed to create the reversed clip.")
+                    else:
+                        print(f"Reversed clip saved as {reversed_clip_path}")
 
             # Display the chosen parameters
             print("\nChosen Parameters:")
@@ -105,16 +119,21 @@ def create_droste_image_effect(image_path, output_path, shrink_factor, max_itera
         print(f"An error occurred during image processing: {e}")
 
 def save_image_with_format(image, path, format):
-    # Check if the frame format is JPEG or JPG and the image mode is RGBA
-    if format in ['jpeg', 'jpg']:
-        # Convert to RGB before saving if necessary
-        if image.mode == 'RGBA':
-            image = image.convert('RGB')
-        # Save with high quality
-        image.save(path, quality=100)
-    else:
-        # Save in the current mode for other formats
-        image.save(path)
+    try:
+        # Check if the frame format is JPEG or JPG and the image mode is RGBA
+        if format in ['jpeg', 'jpg']:
+            # Convert to RGB before saving if necessary
+            if image.mode == 'RGBA':
+                image = image.convert('RGB')
+            # Save with high quality
+            image.save(path, quality=100)
+        else:
+            # Save in the current mode for other formats
+            image.save(path)
+        return True
+    except Exception as e:
+        print(f"An error occurred while saving the image: {e}")
+        return False
 
 def create_timelapse_video(frame_paths, output_filename, fps, include_reverse):
     try:
@@ -135,9 +154,33 @@ def create_timelapse_video(frame_paths, output_filename, fps, include_reverse):
 
         # Write the final clip to a file
         final_clip.write_videofile(output_filename, codec='libx264')
+        return True
     except Exception as e:
         print(f"An error occurred during video creation: {e}")
         traceback.print_exc()
+        return False
+
+def get_yes_no_input(prompt, parent=None):
+    while True:
+        response = simpledialog.askstring("Input", prompt, parent=parent)
+        if response is None:  # User pressed cancel
+            print("Operation cancelled by user.")
+            sys.exit(0)  # Exit the script
+        elif response.lower() in ['yes', 'no', 'true', 'false']:
+            return response.lower() in ['yes', 'true']
+        else:
+            print("Invalid input. Please enter 'yes' or 'no'.")
+
+def get_input_from_options(prompt, options, parent=None):
+    while True:
+        response = simpledialog.askstring("Input", f"{prompt} (choose from {', '.join(options)}):", parent=parent)
+        if response is None:  # User pressed cancel
+            print("Operation cancelled by user.")
+            sys.exit(0)  # Exit the script
+        elif response.lower() in [option.lower() for option in options]:
+            return response.lower()
+        else:
+            print(f"Invalid input. Please choose from {', '.join(options)}.")
 
 def main():
     # Command-line argument parsing
@@ -204,13 +247,19 @@ def main():
             # Shrink Factor: Determines the reduction in size for each iteration.
             # A lower shrink factor results in a more significant reduction per iteration.
             shrink_factor = simpledialog.askfloat("Input", "Enter shrink factor (e.g., 0.99):", parent=root, minvalue=0.01, maxvalue=1.00)
+            if shrink_factor is None:
+                print("Operation cancelled by user.")
+                sys.exit(0)
 
             # Max Iterations: Specifies the total number of shrinking and pasting iterations.
             # More iterations result in a more complex final image.
             max_iterations = simpledialog.askinteger("Input", "Enter maximum iterations (e.g., 100):", parent=root, minvalue=1)
+            if max_iterations is None:
+                print("Operation cancelled by user.")
+                sys.exit(0)
 
             # Save Timelapse: Option to save a video showing the image processing over each iteration.
-            save_timelapse = simpledialog.askstring("Input", "Save timelapse video? (yes/no):", parent=root).lower() == 'yes'
+            save_timelapse = get_yes_no_input("Save timelapse video? (yes/no):", root)
 
             # FPS for Timelapse: Sets the frame rate for the timelapse video. Higher FPS for smoother playback.
             fps = None
@@ -221,27 +270,31 @@ def main():
 
             if save_timelapse:
                 fps = simpledialog.askinteger("Input", "Enter FPS for timelapse (e.g., 10):", parent=root, minvalue=1)
-                include_reverse = simpledialog.askstring("Input", "Include reversed clip in video? (yes/no):", parent=root).lower() == 'yes'
-                save_reversed_clip = simpledialog.askstring("Input", "Save reversed clip by itself? (yes/no):", parent=root).lower() == 'yes'
+                if fps is None:
+                    print("Operation cancelled by user.")
+                    sys.exit(0)
+                include_reverse = get_yes_no_input("Include reversed clip in video? (yes/no):", root)
+                save_reversed_clip = get_yes_no_input("Save reversed clip by itself? (yes/no):", root)
 
             # Image Resampling Method: Choose the method for resizing images during processing.
             resampling_options = ['NEAREST', 'BOX', 'BILINEAR', 'HAMMING', 'BICUBIC', 'LANCZOS']
-            resampling_method = simpledialog.askstring("Input", f"Enter Image Resampling Method (choose from {', '.join(resampling_options)}):", parent=root).upper()
+            resampling_method_input = get_input_from_options("Enter Image Resampling Method", resampling_options, root)
+            resampling_method = resampling_method_input.upper()
 
             # Frame Format: Select the format for saving frames (supports PNG, JPG, JPEG, BMP).
             frame_format_options = ['png', 'jpg', 'jpeg', 'bmp', 'webp']
-            frame_format = simpledialog.askstring("Input", f"Enter Frame Format (choose from {', '.join(frame_format_options)}):", parent=root).lower()
+            frame_format = get_input_from_options("Enter Frame Format", frame_format_options, root)
 
             # Rotation Angle: Define the angle of rotation applied to each image iteration.
-            rotation_angle = simpledialog.askfloat("Input", "Enter rotation angle per iteration (e.g., 10):", parent=root)
-
-            # Validate user input for Image Resampling Method
-            if resampling_method not in resampling_options:
-                raise ValueError(f"Invalid resampling method. Please choose from {', '.join(resampling_options)}.")
-
-            # Validate user input for Frame Format
-            if frame_format not in frame_format_options:
-                raise ValueError(f"Invalid frame format. Please choose from {', '.join(frame_format_options)}.")
+            while True:
+                rotation_angle = simpledialog.askfloat("Input", "Enter rotation angle per iteration (e.g., 10):", parent=root)
+                if rotation_angle is None:  # User pressed cancel
+                    print("Operation cancelled by user.")
+                    sys.exit(0)  # Exit the script
+                elif -360 <= rotation_angle <= 360:
+                    break  # Valid input, exit the loop
+                else:
+                    print("Invalid input. Please enter a value between -360 and 360 degrees.")
 
             # Get the base filename without extension
             base_filename = os.path.splitext(os.path.basename(file_path))[0]
