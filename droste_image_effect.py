@@ -9,7 +9,7 @@ from tkinter import filedialog, simpledialog
 from PIL import Image
 from moviepy.editor import ImageSequenceClip, concatenate_videoclips, vfx
 
-def create_dostre_image_effect(image_path, output_path, shrink_factor, max_iterations, save_timelapse, fps, include_reverse, timelapse_video_path, reversed_clip_path, save_reversed_clip, unique_suffix, resampling_method, frame_format, rotation_angle):
+def create_droste_image_effect(image_path, output_path, shrink_factor, max_iterations, save_timelapse, fps, include_reverse, timelapse_video_path, reversed_clip_path, save_reversed_clip, unique_suffix, resampling_method, frame_format, rotation_angle):
     try:
         # Load the original image
         original_image = Image.open(image_path)
@@ -178,7 +178,7 @@ def main():
         reversed_clip_path = f"reversed_clip_{os.path.splitext(os.path.basename(output_image_path))[0]}.mp4" if args.save_reversed_clip else None
 
         # Call the image processing function
-        create_dostre_image_effect(
+        create_droste_image_effect(
             args.image_path, output_image_path, args.shrink_factor, args.max_iterations,
             args.save_timelapse, args.fps, args.include_reverse, timelapse_video_path,
             reversed_clip_path, args.save_reversed_clip, unique_suffix,
@@ -252,7 +252,7 @@ def main():
             reversed_clip_path = f"reversed_clip_{unique_suffix}.mp4" if save_reversed_clip else None
 
             # Create the recursive mirror effect
-            create_dostre_image_effect(
+            create_droste_image_effect(
                 file_path, output_image_path, shrink_factor, max_iterations,
                 save_timelapse, fps, include_reverse, timelapse_video_path,
                 reversed_clip_path, save_reversed_clip, unique_suffix,
