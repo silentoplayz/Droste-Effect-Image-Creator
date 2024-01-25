@@ -21,27 +21,35 @@ Before using this script, please ensure you have the following installed:
   ```
 
 # **Run the Script:**
+## GUI-Based Usage:
   ```python
   python droste_image_effect.py
   ```
-**Follow the on-screen prompts to select an image and input parameters.**
+**Follow the on-screen prompts to select an image and then input parameters.**
 
-# Parameters
+## Console-Based Usage:
+  ```pythong
+  python droste_image_effect.py --image_path <path_to_image> --shrink_factor <shrink_factor_value> --max_iterations <max_iterations_value> --save_timelapse <yes/no> --fps <fps_value> --include_reverse <yes/no> --save_reversed_clip <yes/no> --resampling_method <resampling_method_value> --frame_format <frame_format_value> --rotation_angle <rotation_angle_value>
+  ```
+**Replace the placeholders (`<...>`) with the actual values you want to use for console-based execution. Feel free to use either the GUI or console-based command as per your preference.**
 
-| Parameter                         | Description                                                                                                       |
-|-----------------------------------|-------------------------------------------------------------------------------------------------------------------|
-| Shrink Factor (float, required)   | Enter a shrink factor (e.g., 0.99) to determine how much each iteration of the image is reduced in size.         |
-| Max Iterations (integer, required)| Set the maximum number of iterations. Higher values result in more repetitions of the shrinking and pasting process. |
-| Save Timelapse (yes/no)           | Specify whether to save a timelapse video of the image processing. Respond 'yes' to save a video showing each iteration. |
-| FPS for Timelapse (integer)       | Enter the Frames Per Second (FPS) for the timelapse video. Higher FPS results in a smoother video.                  |
-| Include Reverse (yes/no)          | Decide whether to include a reversed clip in the timelapse video, creating a seamless loop effect.                   |
-| Save Reversed Clip (yes/no)       | Choose whether to save the reversed clip separately. Respond 'yes' to save a reversed clip showing the image sequence in reverse. |
-| Image Resampling Method (string)  | Select the resampling method for image processing (e.g., 'NEAREST', 'BOX', 'BILINEAR', 'HAMMING', 'BICUBIC', 'LANCZOS').                                    |
-| Frame Format (string)             | Choose the format for saving frames during image processing (e.g., 'png', 'jpg', 'jpeg', 'bmp').                                   |
-| Rotation Angle (float)            | Enter the rotation angle per iteration (e.g., 10 degrees) to apply a cumulative rotation effect to each image iteration. |
+# Parameters:
+
+| Parameter                         | Description                                                                                                       | Console Command Example (if applicable)                           |
+|-----------------------------------|-------------------------------------------------------------------------------------------------------------------|----------------------------------------------------------|
+| Shrink Factor (float, required)   | Enter a shrink factor (e.g., 0.99) to determine how much each iteration of the image is reduced in size.         | `--shrink_factor 0.99`                                     |
+| Max Iterations (integer, required)| Set the maximum number of iterations. Higher values result in more repetitions of the shrinking and pasting process. | `--max_iterations 100`                                    |
+| Save Timelapse (yes/no)           | Specify whether to save a timelapse video of the image processing. Respond 'yes' to save a video showing each iteration. | `--save_timelapse yes`                                    |
+| FPS for Timelapse (integer)       | Enter the Frames Per Second (FPS) for the timelapse video. Higher FPS results in a smoother video.                  | `--fps 10`                                               |
+| Include Reverse (yes/no)          | Decide whether to include a reversed clip in the timelapse video, creating a seamless loop effect.                   | `--include_reverse yes`                                  |
+| Save Reversed Clip (yes/no)       | Choose whether to save the reversed clip separately. Respond 'yes' to save a reversed clip showing the image sequence in reverse. | `--save_reversed_clip yes`                               |
+| Image Resampling Method (string)  | Select the resampling method for image processing (e.g., 'NEAREST', 'BOX', 'BILINEAR', 'HAMMING', 'BICUBIC', 'LANCZOS').                                    | `--resampling_method BILINEAR`                           |
+| Frame Format (string)             | Choose the format for saving frames during image processing (e.g., 'png', 'jpg', 'jpeg', 'bmp').                                   | `--frame_format png`                                     |
+| Rotation Angle (float)            | Enter the rotation angle per iteration (e.g., 10 degrees) to apply a cumulative rotation effect to each image iteration. | `--rotation_angle 10`                                    |
+| `--image_path` (string) | Path to the input image.                                                                                         | `--image_path path/to/your/image.jpg`                                                      |
 
 # Output
-The final processed image is saved as `output_{unique_suffix}.png` in the script's directory. If you choose to save a timelapse video, it will be saved as `time_lapse_{unique_suffix}.mp4`. If you opt to save the reversed clip separately, it will be named `reversed_clip_{unique_suffix}.mp4`.
+The final processed image is saved as `output_{unique_suffix}.{frame_format}` in the script's directory. If you choose to save a timelapse video, it will be saved as `time_lapse_{unique_suffix}.mp4`. If you opt to save the reversed clip separately, it will be named `reversed_clip_{unique_suffix}.mp4`.
 
 # Disclaimer
 **Please note that while each image iteration is processed sequentially, the impact of certain parameters, like the shrink factor, may be predictable to an extent. For example, a shrink factor of 0.99 will reduce the image size by 1% in each iteration. However, the overall outcome, especially for complex parameter combinations, can be fully appreciated only after the process is complete (meaning the final outcome of your chosen parameters may not be immediately apparent). Therefore, I personally encourage experimentation with the parameters and learning from the results to fine-tune the effect(s) to your preference. This iterative process is part of the creative journey, offering a hands-on experience in digital art creation.**
