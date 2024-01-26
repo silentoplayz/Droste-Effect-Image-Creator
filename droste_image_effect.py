@@ -342,7 +342,7 @@ class CustomDialog(tk.Toplevel):
                 raise ValueError("Cannot save reversed clip without saving timelapse.")
 
             # Resampling Method Validation
-            resampling_method = self.resampling_method_entry.get().lower()
+            resampling_method = self.resampling_method_entry.get()
             valid_resampling_methods = ['Nearest', 'Box', 'Bilinear', 'Hamming', 'Bicubic', 'Lanczos']
             if resampling_method not in valid_resampling_methods:
                 raise ValueError(f"Invalid resampling method. Choose from {', '.join(valid_resampling_methods)}.")
