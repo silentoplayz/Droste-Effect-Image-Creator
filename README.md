@@ -29,7 +29,7 @@ Before using this script, please ensure you have the following installed:
 
 ## Console-Based Usage:
   ```pythong
-  python droste_image_effect.py --image_path <path_to_image> --shrink_factor <shrink_factor_value> --max_iterations <max_iterations_value> --save_timelapse <yes/no> --fps <fps_value> --include_reverse <yes/no> --save_reversed_clip <yes/no> --resampling_method <resampling_method_value> --frame_format <frame_format_value> --rotation_angle <rotation_angle_value>
+  python droste_image_effect.py --image_path <path_to_image> --shrink_factor <shrink_factor_value> --max_iterations <max_iterations_value> --save_timelapse <yes/no> --fps <fps_value> --include_reverse <yes/no> --save_reversed_clip <yes/no> --resampling_method <resampling_method_value> --rotation_angle <rotation_angle_value> --output_format <output_format_value>
   ```
 **Replace the placeholders (`<...>`) with the actual values you want to use for console-based execution. Feel free to use either the GUI or console-based command as per your preference.**
 
