@@ -1,6 +1,8 @@
 import argparse
+import atexit
 import datetime
 import os
+import shutil
 import sys
 import tempfile
 import tkinter as tk
@@ -10,7 +12,15 @@ from tkinter import filedialog, simpledialog
 from PIL import Image
 from moviepy.editor import ImageSequenceClip, concatenate_videoclips, vfx
 
+def cleanup_temp_dir(temp_dir):
+    try:
+        shutil.rmtree(temp_dir)
+        print(f"Temporary files cleaned up: {temp_dir}")
+    except Exception as e:
+        print(f"Error cleaning up temporary files: {e}")
+
 def create_droste_image_effect(image_path, output_path, shrink_factor, max_iterations, save_timelapse, fps, include_reverse, timelapse_video_path, reversed_clip_path, save_reversed_clip, unique_suffix, resampling_method, frame_format, rotation_angle):
+    temp_dir = None
     try:
         # Load the original image
         original_image = Image.open(image_path)
@@ -23,100 +33,104 @@ def create_droste_image_effect(image_path, output_path, shrink_factor, max_itera
         current_size = original_image.size
         total_rotation = 0  # Initialize total rotation
 
-        # Create a temporary directory to store frames
-        with tempfile.TemporaryDirectory() as temp_dir:
-            frame_paths = []
+        # Create a manual temporary directory
+        temp_dir = tempfile.mkdtemp()
+        frame_paths = []
 
-            # Save the original image as the first frame
-            frame_path = os.path.join(temp_dir, f"frame_0.{frame_format}")
+        # Save the original image as the first frame
+        frame_path = os.path.join(temp_dir, f"frame_0.{frame_format}")
+        if not save_image_with_format(original_image, frame_path, frame_format):
+            print("Failed to save the initial frame.")
+            return
+
+        frame_paths.append(frame_path)
+
+        for iteration in range(1, max_iterations):
+            print(f"Processing iteration {iteration}...")
+
+            # Calculate the new size
+            new_width = int(current_size[0] * shrink_factor)
+            new_height = int(current_size[1] * shrink_factor)
+
+            # Break the loop if the new size is too small
+            if new_width <= 0 or new_height <= 0:
+                print("Image has become too small to process further.")
+                break
+
+            # Resize the image with user-specified resampling method
+            resized_image = current_image.resize((new_width, new_height), getattr(Image.Resampling, resampling_method))
+
+            # Update total rotation
+            total_rotation += rotation_angle
+            # Rotate the image by the accumulated angle with a transparent background
+            rotated_image = resized_image.rotate(total_rotation, expand=True, fillcolor=(0,0,0,0))
+
+            print("Rotated image size:", rotated_image.size)
+            print("Original image size:", original_image.size)
+
+            # Calculate the position to paste the resized image
+            paste_x = (original_image.size[0] - rotated_image.size[0]) // 2
+            paste_y = (original_image.size[1] - rotated_image.size[1]) // 2
+
+            # Create a new transparent image to paste the rotated image
+            transparent_image = Image.new('RGBA', original_image.size, (0, 0, 0, 0))
+            transparent_image.paste(rotated_image, (paste_x, paste_y), rotated_image)
+
+            # Paste the transparent image onto the original image
+            original_image.paste(transparent_image, (0, 0), transparent_image)
+
+            # Update the current size for the next iteration
+            current_size = (new_width, new_height)
+
+            # Save the frame with user-specified frame format
+            frame_path = os.path.join(temp_dir, f"frame_{iteration}.{frame_format}")
             if not save_image_with_format(original_image, frame_path, frame_format):
-                print("Failed to save the initial frame.")
+                print(f"Failed to save frame {iteration}.")
                 return
 
             frame_paths.append(frame_path)
 
-            for iteration in range(1, max_iterations):
-                print(f"Processing iteration {iteration}...")
+        # Save the final image
+        if not save_image_with_format(original_image, output_path, frame_format):
+            print("Failed to save the final image.")
+            return
 
-                # Calculate the new size
-                new_width = int(current_size[0] * shrink_factor)
-                new_height = int(current_size[1] * shrink_factor)
+        print("Image processing complete.")
 
-                # Break the loop if the new size is too small
-                if new_width <= 0 or new_height <= 0:
-                    print("Image has become too small to process further.")
-                    break
+        # Create the time-lapse video if required
+        if save_timelapse:
+            if not create_timelapse_video(frame_paths, timelapse_video_path, fps, include_reverse):
+                print("Failed to create the time-lapse video.")
+            else:
+                print(f"Time-lapse video saved as {timelapse_video_path}")
 
-                # Resize the image with user-specified resampling method
-                resized_image = current_image.resize((new_width, new_height), getattr(Image.Resampling, resampling_method))
-
-                # Update total rotation
-                total_rotation += rotation_angle
-                # Rotate the image by the accumulated angle with a transparent background
-                rotated_image = resized_image.rotate(total_rotation, expand=True, fillcolor=(0,0,0,0))
-
-                print("Rotated image size:", rotated_image.size)
-                print("Original image size:", original_image.size)
-
-                # Calculate the position to paste the resized image
-                paste_x = (original_image.size[0] - rotated_image.size[0]) // 2
-                paste_y = (original_image.size[1] - rotated_image.size[1]) // 2
-
-                # Create a new transparent image to paste the rotated image
-                transparent_image = Image.new('RGBA', original_image.size, (0, 0, 0, 0))
-                transparent_image.paste(rotated_image, (paste_x, paste_y), rotated_image)
-
-                # Paste the transparent image onto the original image
-                original_image.paste(transparent_image, (0, 0), transparent_image)
-
-                # Update the current size for the next iteration
-                current_size = (new_width, new_height)
-
-                # Save the frame with user-specified frame format
-                frame_path = os.path.join(temp_dir, f"frame_{iteration}.{frame_format}")
-                if not save_image_with_format(original_image, frame_path, frame_format):
-                    print(f"Failed to save frame {iteration}.")
-                    return
-
-                frame_paths.append(frame_path)
-
-            # Save the final image
-            if not save_image_with_format(original_image, output_path, frame_format):
-                print("Failed to save the final image.")
-                return
-
-            print("Image processing complete.")
-
-            # Create the time-lapse video if required
-            if save_timelapse:
-                if not create_timelapse_video(frame_paths, timelapse_video_path, fps, include_reverse):
-                    print("Failed to create the time-lapse video.")
+            # Create the reversed clip if required and save it separately
+            if save_reversed_clip:
+                reversed_clip_path = f"reversed_clip_{unique_suffix}.mp4"
+                if not create_timelapse_video(frame_paths[::-1], reversed_clip_path, fps, False):
+                    print("Failed to create the reversed clip.")
                 else:
-                    print(f"Time-lapse video saved as {timelapse_video_path}")
+                    print(f"Reversed clip saved as {reversed_clip_path}")
 
-                # Create the reversed clip if required and save it separately
-                if save_reversed_clip:
-                    reversed_clip_path = f"reversed_clip_{unique_suffix}.mp4"
-                    if not create_timelapse_video(frame_paths[::-1], reversed_clip_path, fps, False):
-                        print("Failed to create the reversed clip.")
-                    else:
-                        print(f"Reversed clip saved as {reversed_clip_path}")
-
-            # Display the chosen parameters
-            print("\nChosen Parameters:")
-            print(f"Shrink Factor: {shrink_factor}")
-            print(f"Max Iterations: {max_iterations}")
-            print(f"Save Timelapse: {save_timelapse}")
-            if save_timelapse:
-                print(f"FPS for Timelapse: {fps}")
-                print(f"Include Reverse: {include_reverse}")
-                print(f"Save Reversed Clip: {save_reversed_clip}")
-            print(f"Image Resampling Method: {resampling_method}")
-            print(f"Frame Format: {frame_format}")
-            print(f"Rotation Angle: {rotation_angle}")
+        # Display the chosen parameters
+        print("\nChosen Parameters:")
+        print(f"Shrink Factor: {shrink_factor}")
+        print(f"Max Iterations: {max_iterations}")
+        print(f"Save Timelapse: {save_timelapse}")
+        if save_timelapse:
+            print(f"FPS for Timelapse: {fps}")
+            print(f"Include Reverse: {include_reverse}")
+            print(f"Save Reversed Clip: {save_reversed_clip}")
+        print(f"Image Resampling Method: {resampling_method}")
+        print(f"Frame Format: {frame_format}")
+        print(f"Rotation Angle: {rotation_angle}")
 
     except Exception as e:
         print(f"An error occurred during image processing: {e}")
+    finally:
+        # Cleanup the temporary directory
+        if temp_dir:
+            cleanup_temp_dir(temp_dir)
 
 def save_image_with_format(image, path, format):
     try:
