@@ -405,7 +405,7 @@ class CustomDialog(tk.Toplevel):
 def main():
     # Command-line argument parsing
     parser = argparse.ArgumentParser(description="Create Droste Image Effect")
-    parser.add_argument("--image_path", help="Path to the input image", required=True)
+    parser.add_argument("--image_path", help="Path to the input image")
     parser.add_argument("--shrink_factor", type=float, help="Shrink factor for the image", default=0.95)
     parser.add_argument("--max_iterations", type=int, help="Maximum number of iterations", default=100)
     parser.add_argument("--save_timelapse", type=lambda x: (str(x).lower() in ['yes', 'true']), help="Save timelapse video (yes/true or no/false)", default=True)
