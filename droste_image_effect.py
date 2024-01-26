@@ -1,5 +1,4 @@
 import argparse
-import atexit
 import datetime
 import os
 import shutil
@@ -7,9 +6,7 @@ import sys
 import tempfile
 import time
 import tkinter as tk
-import traceback
-from tkinter import filedialog, simpledialog
-
+from tkinter import filedialog, messagebox
 from PIL import Image
 from moviepy.editor import ImageSequenceClip, concatenate_videoclips, vfx
 
@@ -43,6 +40,18 @@ def process_image_for_droste_effect(image_path, temp_dir, shrink_factor, max_ite
 
         frame_paths.append(frame_path)
 
+        # Mapping string input to PIL resampling methods
+        resampling_methods = {
+            "nearest": Image.Resampling.NEAREST,
+            "box": Image.Resampling.BOX,
+            "bilinear": Image.Resampling.BILINEAR,
+            "hamming": Image.Resampling.HAMMING,
+            "bicubic": Image.Resampling.BICUBIC,
+            "lanczos": Image.Resampling.LANCZOS,
+        }
+
+        pil_resampling_method = resampling_methods.get(resampling_method.lower(), Image.Resampling.BILINEAR)
+
         for iteration in range(1, max_iterations):
             print(f"Processing iteration {iteration}...")
 
@@ -56,7 +65,7 @@ def process_image_for_droste_effect(image_path, temp_dir, shrink_factor, max_ite
                 break
 
             # Resize the image with user-specified resampling method
-            resized_image = current_image.resize((new_width, new_height), getattr(Image.Resampling, resampling_method))
+            resized_image = current_image.resize((new_width, new_height), pil_resampling_method)
 
             # Update total rotation
             total_rotation += rotation_angle
@@ -209,27 +218,144 @@ def create_timelapse_video(frame_paths, output_filename, fps, include_reverse):
         traceback.print_exc()
         return False
 
-def get_yes_no_input(prompt, parent=None):
-    while True:
-        response = simpledialog.askstring("Input", prompt, parent=parent)
-        if response is None:  # User pressed cancel
-            print("Operation cancelled by user.")
-            sys.exit(0)  # Exit the script
-        elif response.lower() in ['yes', 'no', 'true', 'false']:
-            return response.lower() in ['yes', 'true']
-        else:
-            print("Invalid input. Please enter 'yes' or 'no'.")
+class CustomDialog(tk.Toplevel):
+    def __init__(self, parent):
+        super().__init__(parent)
+        self.title("Droste Effect Parameters")
 
-def get_input_from_options(prompt, options, parent=None):
-    while True:
-        response = simpledialog.askstring("Input", f"{prompt} (choose from {', '.join(options)}):", parent=parent)
-        if response is None:  # User pressed cancel
-            print("Operation cancelled by user.")
-            sys.exit(0)  # Exit the script
-        elif response.lower() in [option.lower() for option in options]:
-            return response.lower()
-        else:
-            print(f"Invalid input. Please choose from {', '.join(options)}.")
+        # Shrink Factor
+        tk.Label(self, text="Shrink Factor (0.01 to 1.00):").pack()
+        self.shrink_factor_entry = tk.Entry(self)
+        self.shrink_factor_entry.pack()
+
+        # Max Iterations
+        tk.Label(self, text="Max Iterations:").pack()
+        self.max_iterations_entry = tk.Entry(self)
+        self.max_iterations_entry.pack()
+
+        # Save Timelapse
+        tk.Label(self, text="Save Timelapse (yes/no):").pack()
+        self.save_timelapse_entry = tk.Entry(self)
+        self.save_timelapse_entry.pack()
+
+        # FPS
+        tk.Label(self, text="FPS for Timelapse:").pack()
+        self.fps_entry = tk.Entry(self)
+        self.fps_entry.pack()
+
+        # Include Reverse
+        tk.Label(self, text="Include Reverse in Video (yes/no):").pack()
+        self.include_reverse_entry = tk.Entry(self)
+        self.include_reverse_entry.pack()
+
+        # Save Reversed Clip
+        tk.Label(self, text="Save Reversed Clip (yes/no):").pack()
+        self.save_reversed_clip_entry = tk.Entry(self)
+        self.save_reversed_clip_entry.pack()
+
+        # Resampling Method
+        tk.Label(self, text="Resampling Method:").pack()
+        self.resampling_method_entry = tk.Entry(self)
+        self.resampling_method_entry.pack()
+
+        # Rotation Angle
+        tk.Label(self, text="Rotation Angle:").pack()
+        self.rotation_angle_entry = tk.Entry(self)
+        self.rotation_angle_entry.pack()
+
+        # Output Format
+        tk.Label(self, text="Output Format (png/jpg/jpeg/bmp/webp):").pack()
+        self.output_format_entry = tk.Entry(self)
+        self.output_format_entry.pack()
+
+        # Submit Button
+        self.submit_button = tk.Button(self, text="Submit", command=self.on_submit)
+        self.submit_button.pack()
+
+        self.result = None
+
+    def on_submit(self):
+        try:
+            # Shrink Factor Validation
+            shrink_factor_str = self.shrink_factor_entry.get()
+            if not shrink_factor_str:
+                raise ValueError("Shrink factor is required.")
+            shrink_factor = float(shrink_factor_str)
+            if not (0 < shrink_factor <= 1):
+                raise ValueError("Shrink factor must be between 0.01 and 1.00")
+
+            # Max Iterations Validation
+            max_iterations_str = self.max_iterations_entry.get()
+            if not max_iterations_str:
+                raise ValueError("Max iterations is required.")
+            max_iterations = int(max_iterations_str)
+            if max_iterations <= 0:
+                raise ValueError("Max iterations must be a positive integer")
+
+            # Save Timelapse Validation
+            save_timelapse_str = self.save_timelapse_entry.get().lower()
+            if save_timelapse_str not in ['yes', 'no', 'true', 'false']:
+                raise ValueError("Invalid input for save timelapse. Please enter 'yes' or 'no'.")
+            save_timelapse = save_timelapse_str in ['yes', 'true']
+
+            # FPS Validation
+            fps_str = self.fps_entry.get()
+            if save_timelapse and not fps_str:
+                raise ValueError("FPS is required for timelapse.")
+            fps = int(fps_str) if fps_str else 10  # Default to 10 if not provided
+            if fps <= 0:
+                raise ValueError("FPS must be a positive integer.")
+
+            # Include Reverse Validation
+            include_reverse_str = self.include_reverse_entry.get().lower()
+            if include_reverse_str not in ['yes', 'no', 'true', 'false']:
+                raise ValueError("Invalid input for include reverse. Please enter 'yes' or 'no'.")
+            include_reverse = include_reverse_str in ['yes', 'true']
+            if not save_timelapse and include_reverse:
+                raise ValueError("Cannot include reverse in video without saving timelapse.")
+
+            # Save Reversed Clip Validation
+            save_reversed_clip_str = self.save_reversed_clip_entry.get().lower()
+            if save_reversed_clip_str not in ['yes', 'no', 'true', 'false']:
+                raise ValueError("Invalid input for save reversed clip. Please enter 'yes' or 'no'.")
+            save_reversed_clip = save_reversed_clip_str in ['yes', 'true']
+            if not save_timelapse and save_reversed_clip:
+                raise ValueError("Cannot save reversed clip without saving timelapse.")
+
+            # Resampling Method Validation
+            resampling_method = self.resampling_method_entry.get().lower()
+            valid_resampling_methods = ['nearest', 'box', 'bilinear', 'hamming', 'bicubic', 'lanczos']
+            if resampling_method not in valid_resampling_methods:
+                raise ValueError(f"Invalid resampling method. Choose from {', '.join(valid_resampling_methods)}.")
+
+            # Rotation Angle Validation
+            rotation_angle_str = self.rotation_angle_entry.get()
+            if not rotation_angle_str:
+                raise ValueError("Rotation angle is required.")
+            rotation_angle = float(rotation_angle_str)
+            if not (-360 <= rotation_angle <= 360):
+                raise ValueError("Rotation angle must be between -360 and 360 degrees")
+
+            # Output Format Validation
+            output_format = self.output_format_entry.get().lower()
+            valid_formats = ['png', 'jpg', 'jpeg', 'bmp', 'webp']
+            if output_format not in valid_formats:
+                raise ValueError(f"Invalid output format. Choose from {', '.join(valid_formats)}.")
+
+            self.result = {
+                'shrink_factor': shrink_factor,
+                'max_iterations': max_iterations,
+                'save_timelapse': save_timelapse,
+                'fps': fps,
+                'include_reverse': include_reverse,
+                'save_reversed_clip': save_reversed_clip,
+                'resampling_method': resampling_method,
+                'rotation_angle': rotation_angle,
+                'output_format': output_format
+            }
+            self.destroy()
+        except ValueError as e:
+            messagebox.showerror("Input Error", str(e))
 
 def main():
     # Command-line argument parsing
@@ -318,89 +444,48 @@ def main():
             # Open a file dialog to select an image
             file_path = filedialog.askopenfilename(title="Select an Image", filetypes=[("Image Files", "*.png;*.jpg;*.jpeg;*.bmp;*.webp")])
             if not file_path:
-                raise ValueError("No file selected. Exiting the program.")
-
-            # Get parameters from the user
-
-            # Shrink Factor: Determines the reduction in size for each iteration.
-            # A lower shrink factor results in a more significant reduction per iteration.
-            shrink_factor = simpledialog.askfloat("Input", "Enter shrink factor (e.g., 0.99):", parent=root, minvalue=0.01, maxvalue=1.00)
-            if shrink_factor is None:
-                print("Operation cancelled by user.")
+                print("No file selected. Exiting the program.")
                 sys.exit(0)
 
-            # Max Iterations: Specifies the total number of shrinking and pasting iterations.
-            # More iterations result in a more complex final image.
-            max_iterations = simpledialog.askinteger("Input", "Enter maximum iterations (e.g., 100):", parent=root, minvalue=1)
-            if max_iterations is None:
-                print("Operation cancelled by user.")
-                sys.exit(0)
+            dialog = CustomDialog(root)
+            root.wait_window(dialog)
 
-            # Save Timelapse: Option to save a video showing the image processing over each iteration.
-            save_timelapse = get_yes_no_input("Save timelapse video? (yes/no):", root)
+            if dialog.result:
+                # Unpack the result and call the processing function
+                result = dialog.result
+                shrink_factor = result['shrink_factor']
+                max_iterations = result['max_iterations']
+                save_timelapse = result['save_timelapse']
+                fps = result['fps']
+                include_reverse = result['include_reverse']
+                save_reversed_clip = result['save_reversed_clip']
+                resampling_method = result['resampling_method']
+                rotation_angle = result['rotation_angle']
+                output_format = result['output_format']
 
-            # FPS for Timelapse: Sets the frame rate for the timelapse video. Higher FPS for smoother playback.
-            fps = None
+                # Generate the unique suffix and output paths
+                timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+                base_filename = os.path.splitext(os.path.basename(file_path))[0]
+                unique_suffix = f"{base_filename}_{timestamp}"
+                output_image_path = f"output_{unique_suffix}.{output_format}"
+                timelapse_video_path = f"time_lapse_{unique_suffix}.mp4" if save_timelapse else None
+                reversed_clip_path = f"reversed_clip_{unique_suffix}.mp4" if save_reversed_clip else None
 
-            # Include Reverse: Determines if a reversed clip is added to the timelapse for a looping effect.
-            include_reverse = False
-            save_reversed_clip = False
+                # Call the image processing function with the updated paths
+                create_droste_image_effect(
+                    file_path, output_image_path, shrink_factor, max_iterations,
+                    save_timelapse, fps, include_reverse, timelapse_video_path,
+                    reversed_clip_path, save_reversed_clip, unique_suffix,
+                    resampling_method, rotation_angle, output_format
+                )
+                print(f"Image saved as {output_image_path}")
+                if save_timelapse:
+                    print(f"Time-lapse video saved as {timelapse_video_path}")
+                if save_reversed_clip:
+                    print(f"Reversed clip saved as {reversed_clip_path}")
+            else:
+                print("Operation cancelled by the user. Exiting the program.")
 
-            if save_timelapse:
-                fps = simpledialog.askinteger("Input", "Enter FPS for timelapse (e.g., 10):", parent=root, minvalue=1)
-                if fps is None:
-                    print("Operation cancelled by user.")
-                    sys.exit(0)
-                include_reverse = get_yes_no_input("Include reversed clip in video? (yes/no):", root)
-                save_reversed_clip = get_yes_no_input("Save reversed clip by itself? (yes/no):", root)
-
-            # Image Resampling Method: Choose the method for resizing images during processing.
-            resampling_options = ['NEAREST', 'BOX', 'BILINEAR', 'HAMMING', 'BICUBIC', 'LANCZOS']
-            resampling_method_input = get_input_from_options("Enter Image Resampling Method", resampling_options, root)
-            resampling_method = resampling_method_input.upper()
-            
-            # Add a dialog for choosing the output image format
-            output_format_options = ['png', 'jpg', 'jpeg', 'bmp', 'webp']
-            output_format = get_input_from_options("Enter Output Image Format", output_format_options, root)
-
-            # Rotation Angle: Define the angle of rotation applied to each image iteration.
-            while True:
-                rotation_angle = simpledialog.askfloat("Input", "Enter rotation angle per iteration (e.g., 10):", parent=root)
-                if rotation_angle is None:  # User pressed cancel
-                    print("Operation cancelled by user.")
-                    sys.exit(0)  # Exit the script
-                elif -360 <= rotation_angle <= 360:
-                    break  # Valid input, exit the loop
-                else:
-                    print("Invalid input. Please enter a value between -360 and 360 degrees.")
-
-            # Get the base filename without extension
-            base_filename = os.path.splitext(os.path.basename(file_path))[0]
-            timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
-            unique_suffix = f"{base_filename}_{timestamp}"
-            output_image_path = f"output_{unique_suffix}.{output_format}"
-            timelapse_video_path = f"time_lapse_{unique_suffix}.mp4" if save_timelapse else None
-            reversed_clip_path = f"reversed_clip_{unique_suffix}.mp4" if save_reversed_clip else None
-
-            # Create the recursive mirror effect
-            create_droste_image_effect(
-                file_path, output_image_path, shrink_factor, max_iterations,
-                save_timelapse, fps, include_reverse, timelapse_video_path,
-                reversed_clip_path, save_reversed_clip, unique_suffix,
-                resampling_method, rotation_angle, output_format
-            )
-            print(f"Image saved as {output_image_path}")
-
-            if save_timelapse:
-                print(f"Time-lapse video saved as {timelapse_video_path}")
-
-            if save_reversed_clip:
-                print(f"Reversed clip saved as {reversed_clip_path}")
-
-        except tk.TclError as te:
-            print(f"An error occurred during image selection: {te}")
-        except ValueError as ve:
-            print(f"Input validation error: {ve}")
         except Exception as e:
             print(f"An error occurred: {e}")
 
