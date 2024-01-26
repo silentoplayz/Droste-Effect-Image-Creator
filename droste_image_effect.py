@@ -107,7 +107,7 @@ def process_image_for_droste_effect(image_path, temp_dir, shrink_factor, max_ite
         # traceback.print_exc()
         return [], None
 
-def create_videos(frame_paths, timelapse_video_path, reversed_clip_path, fps, include_reverse, save_reversed_clip):
+def create_videos(frame_paths, timelapse_video_path, reversed_clip_path, fps, include_reverse, save_reversed):
     start_time = time.time()
     if not frame_paths:
         return False
@@ -117,7 +117,7 @@ def create_videos(frame_paths, timelapse_video_path, reversed_clip_path, fps, in
             print("Failed to create the time-lapse video.")
             return False
 
-        if save_reversed_clip:
+        if save_reversed:
             if not create_timelapse_video(frame_paths[::-1], reversed_clip_path, fps, False):
                 print("Failed to create the reversed clip.")
                 return False
@@ -131,7 +131,7 @@ def create_videos(frame_paths, timelapse_video_path, reversed_clip_path, fps, in
         # traceback.print_exc()
         return False
 
-def create_droste_image_effect(image_path, output_path, shrink_factor, max_iterations, save_timelapse, fps, include_reverse, timelapse_video_path, reversed_clip_path, save_reversed_clip, unique_suffix, resampling_method, rotation_angle, output_format):
+def create_droste_image_effect(image_path, output_path, shrink_factor, max_iterations, save_timelapse, fps, include_reverse, timelapse_video_path, reversed_clip_path, save_reversed, unique_suffix, resampling_method, rotation_angle, output_format):
     start_time = time.time()
 
     temp_dir = None
@@ -151,13 +151,13 @@ def create_droste_image_effect(image_path, output_path, shrink_factor, max_itera
         print("Image processing complete.")
 
         # Create the time-lapse video and/or reversed clip if required
-        if save_timelapse or save_reversed_clip:
-            if not create_videos(frame_paths, timelapse_video_path, reversed_clip_path, fps, include_reverse, save_reversed_clip):
+        if save_timelapse or save_reversed:
+            if not create_videos(frame_paths, timelapse_video_path, reversed_clip_path, fps, include_reverse, save_reversed):
                 print("Failed to create videos.")
             else:
                 if save_timelapse:
                     print(f"Time-lapse video saved as {timelapse_video_path}")
-                if save_reversed_clip:
+                if save_reversed:
                     print(f"Reversed clip saved as {reversed_clip_path}")
 
         # Display the chosen parameters
@@ -168,7 +168,7 @@ def create_droste_image_effect(image_path, output_path, shrink_factor, max_itera
         if save_timelapse:
             print(f"FPS for Timelapse: {fps}")
             print(f"Include Reverse: {include_reverse}")
-            print(f"Save Reversed Clip: {save_reversed_clip}")
+            print(f"Save Reversed Clip: {save_reversed}")
         print(f"Image Resampling Method: {resampling_method}")
         print(f"Output Image Format: {output_format}")
         print(f"Rotation Angle: {rotation_angle}")
@@ -226,7 +226,7 @@ def create_timelapse_video(frame_paths, output_filename, fps, include_reverse):
         traceback.print_exc()
         return False
 
-def validate_parameters(image_path, shrink_factor_str, max_iterations_str, save_timelapse_str, fps_str, include_reverse_str, save_reversed_clip_str, resampling_method, rotation_angle_str, output_format):
+def validate_parameters(image_path, shrink_factor_str, max_iterations_str, save_timelapse_str, fps_str, include_reverse_str, save_reversed_str, resampling_method, rotation_angle_str, output_format):
     # Check for None values in required parameters
     if any(param is None for param in [shrink_factor_str, max_iterations_str, resampling_method, rotation_angle_str, output_format]):
         raise ValueError("All arguments (shrink_factor, max_iterations, resampling_method, rotation_angle, output_format) are required  for command-line arguments mode.")
@@ -269,10 +269,10 @@ def validate_parameters(image_path, shrink_factor_str, max_iterations_str, save_
         raise ValueError("Cannot include reverse in video without saving timelapse.")
 
     # Save Reversed Clip Validation
-    if save_reversed_clip_str.lower() not in ['yes', 'no', 'true', 'false']:
+    if save_reversed_str.lower() not in ['yes', 'no', 'true', 'false']:
         raise ValueError("Invalid input for save reversed clip. Please enter 'yes' or 'no'.")
-    save_reversed_clip = save_reversed_clip_str.lower() in ['yes', 'true']
-    if not save_timelapse and save_reversed_clip:
+    save_reversed = save_reversed_str.lower() in ['yes', 'true']
+    if not save_timelapse and save_reversed:
         raise ValueError("Cannot save reversed clip without saving timelapse.")
 
     # Resampling Method Validation
@@ -298,7 +298,7 @@ def validate_parameters(image_path, shrink_factor_str, max_iterations_str, save_
         'save_timelapse': save_timelapse,
         'fps': fps,
         'include_reverse': include_reverse,
-        'save_reversed_clip': save_reversed_clip,
+        'save_reversed': save_reversed,
         'resampling_method': resampling_method.lower(),
         'rotation_angle': rotation_angle,
         'output_format': output_format.lower()
@@ -343,10 +343,10 @@ class CustomDialog(tk.Toplevel):
 
         # Save Reversed Clip with combobox
         tk.Label(self, text="Save Reversed Clip:").pack()
-        self.save_reversed_clip_var = tk.StringVar()
-        self.save_reversed_clip_entry = ttk.Combobox(self, textvariable=self.save_reversed_clip_var, values=["yes", "no"], state="readonly")
-        self.save_reversed_clip_entry.set("yes")  # Default value
-        self.save_reversed_clip_entry.pack()
+        self.save_reversed_var = tk.StringVar()
+        self.save_reversed_entry = ttk.Combobox(self, textvariable=self.save_reversed_var, values=["yes", "no"], state="readonly")
+        self.save_reversed_entry.set("yes")  # Default value
+        self.save_reversed_entry.pack()
 
         # Resampling Method with combobox
         tk.Label(self, text="Resampling Method:").pack()
@@ -384,7 +384,7 @@ class CustomDialog(tk.Toplevel):
             save_timelapse_str = self.save_timelapse_entry.get().lower()
             fps_str = self.fps_entry.get()
             include_reverse_str = self.include_reverse_entry.get().lower()
-            save_reversed_clip_str = self.save_reversed_clip_entry.get().lower()
+            save_reversed_str = self.save_reversed_entry.get().lower()
             resampling_method = self.resampling_method_entry.get()
             rotation_angle_str = self.rotation_angle_entry.get().lower()
             output_format = self.output_format_entry.get().lower()
@@ -392,7 +392,7 @@ class CustomDialog(tk.Toplevel):
             # Validate and process the parameters
             validated_params = validate_parameters(
                 shrink_factor_str, max_iterations_str, save_timelapse_str, fps_str,
-                include_reverse_str, save_reversed_clip_str, resampling_method,
+                include_reverse_str, save_reversed_str, resampling_method,
                 rotation_angle_str, output_format
             )
 
@@ -411,7 +411,7 @@ def main():
     parser.add_argument("--save_timelapse", type=lambda x: (str(x).lower() in ['yes', 'true']), help="Save timelapse video (yes/true or no/false)", default=True)
     parser.add_argument("--fps", type=int, help="Frames per second for timelapse video", default=10)
     parser.add_argument("--include_reverse", type=lambda x: (str(x).lower() in ['yes', 'true']), help="Include reversed clip in video (yes/true or no/false)", default=False)
-    parser.add_argument("--save_reversed_clip", type=lambda x: (str(x).lower() in ['yes', 'true']), help="Save reversed clip by itself (yes/true or no/false)", default=True)
+    parser.add_argument("--save_reversed", type=lambda x: (str(x).lower() in ['yes', 'true']), help="Save reversed clip by itself (yes/true or no/false)", default=True)
     parser.add_argument("--resampling_method", help="Image Resampling Method", default='Bilinear')
     parser.add_argument("--rotation_angle", type=float, help="Rotation angle per iteration", default=0.0)
     parser.add_argument("--output_format", help="Format for the output image", choices=['png', 'jpg', 'jpeg', 'bmp', 'webp'], default='bmp')
@@ -426,7 +426,7 @@ def main():
             validated_params = validate_parameters(
             args.image_path,
             str(args.shrink_factor), str(args.max_iterations), str(args.save_timelapse),
-            str(args.fps), str(args.include_reverse), str(args.save_reversed_clip),
+            str(args.fps), str(args.include_reverse), str(args.save_reversed),
             args.resampling_method, str(args.rotation_angle), args.output_format
             )
 
@@ -436,7 +436,7 @@ def main():
             save_timelapse = validated_params['save_timelapse']
             fps = validated_params['fps']
             include_reverse = validated_params['include_reverse']
-            save_reversed_clip = validated_params['save_reversed_clip']
+            save_reversed = validated_params['save_reversed']
             resampling_method = validated_params['resampling_method']
             rotation_angle = validated_params['rotation_angle']
             output_format = validated_params['output_format']
@@ -447,13 +447,13 @@ def main():
             unique_suffix = f"{base_filename}_{timestamp}"
             output_image_path = f"output_{unique_suffix}.{output_format}"
             timelapse_video_path = f"time_lapse_{unique_suffix}.mp4" if save_timelapse else None
-            reversed_clip_path = f"reversed_clip_{unique_suffix}.mp4" if save_reversed_clip else None
+            reversed_clip_path = f"reversed_clip_{unique_suffix}.mp4" if save_reversed else None
 
             # Call the image processing function with the updated paths
             create_droste_image_effect(
                 args.image_path, output_image_path, shrink_factor, max_iterations,
                 save_timelapse, fps, include_reverse, timelapse_video_path,
-                reversed_clip_path, save_reversed_clip, unique_suffix,
+                reversed_clip_path, save_reversed, unique_suffix,
                 resampling_method, rotation_angle, output_format
             )
         except ValueError as e:
@@ -487,18 +487,18 @@ def main():
                 unique_suffix = f"{base_filename}_{timestamp}"
                 output_image_path = f"output_{unique_suffix}.{result['output_format']}"
                 timelapse_video_path = f"time_lapse_{unique_suffix}.mp4" if result['save_timelapse'] else None
-                reversed_clip_path = f"reversed_clip_{unique_suffix}.mp4" if result['save_reversed_clip'] else None
+                reversed_clip_path = f"reversed_clip_{unique_suffix}.mp4" if result['save_reversed'] else None
 
                 create_droste_image_effect(
                     file_path, output_image_path, result['shrink_factor'], result['max_iterations'],
                     result['save_timelapse'], result['fps'], result['include_reverse'], timelapse_video_path,
-                    reversed_clip_path, result['save_reversed_clip'], unique_suffix,
+                    reversed_clip_path, result['save_reversed'], unique_suffix,
                     result['resampling_method'], result['rotation_angle'], result['output_format']
                 )
                 print(f"Image saved as {output_image_path}")
                 if result['save_timelapse']:
                     print(f"Time-lapse video saved as {timelapse_video_path}")
-                if result['save_reversed_clip']:
+                if result['save_reversed']:
                     print(f"Reversed clip saved as {reversed_clip_path}")
             else:
                 print("Operation cancelled by the user. Exiting the program.")
