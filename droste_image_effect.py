@@ -5,6 +5,7 @@ import os
 import shutil
 import sys
 import tempfile
+import time
 import tkinter as tk
 import traceback
 from tkinter import filedialog, simpledialog
@@ -19,8 +20,9 @@ def cleanup_temp_dir(temp_dir):
     except Exception as e:
         print(f"Error cleaning up temporary files: {e}")
 
-def process_image_for_droste_effect(image_path, temp_dir, shrink_factor, max_iterations, resampling_method, frame_format, rotation_angle):
+def process_image_for_droste_effect(image_path, temp_dir, shrink_factor, max_iterations, resampling_method, rotation_angle):
     frame_paths = []
+    frame_format = 'bmp'
     try:
         # Load the original image
         original_image = Image.open(image_path)
@@ -32,13 +34,12 @@ def process_image_for_droste_effect(image_path, temp_dir, shrink_factor, max_ite
         current_image = original_image.copy()
         current_size = original_image.size
         total_rotation = 0  # Initialize total rotation
-        frame_paths = []
 
         # Save the original image as the first frame
         frame_path = os.path.join(temp_dir, f"frame_0.{frame_format}")
         if not save_image_with_format(original_image, frame_path, frame_format):
             print("Failed to save the initial frame.")
-            return
+            return [], None
 
         frame_paths.append(frame_path)
 
@@ -86,7 +87,6 @@ def process_image_for_droste_effect(image_path, temp_dir, shrink_factor, max_ite
                 return [], None
 
             frame_paths.append(frame_path)
-            current_size = (new_width, new_height)
 
         return frame_paths, original_image
     except Exception as e:
@@ -94,6 +94,7 @@ def process_image_for_droste_effect(image_path, temp_dir, shrink_factor, max_ite
         return [], None
 
 def create_videos(frame_paths, timelapse_video_path, reversed_clip_path, fps, include_reverse, save_reversed_clip):
+    start_time = time.time()
     if not frame_paths:
         return False
 
@@ -107,23 +108,28 @@ def create_videos(frame_paths, timelapse_video_path, reversed_clip_path, fps, in
                 print("Failed to create the reversed clip.")
                 return False
 
+        end_time = time.time()  # End time measurement
+        print(f"Video creation completed in {end_time - start_time:.2f} seconds.")
+
         return True
     except Exception as e:
         print(f"Error in video creation: {e}")
         return False
 
-def create_droste_image_effect(image_path, output_path, shrink_factor, max_iterations, save_timelapse, fps, include_reverse, timelapse_video_path, reversed_clip_path, save_reversed_clip, unique_suffix, resampling_method, frame_format, rotation_angle):
+def create_droste_image_effect(image_path, output_path, shrink_factor, max_iterations, save_timelapse, fps, include_reverse, timelapse_video_path, reversed_clip_path, save_reversed_clip, unique_suffix, resampling_method, rotation_angle, output_format):
+    start_time = time.time()
+
     temp_dir = None
     try:
         temp_dir = tempfile.mkdtemp()
         frame_paths, final_image = process_image_for_droste_effect(
-            image_path, temp_dir, shrink_factor, max_iterations, resampling_method, frame_format, rotation_angle
+            image_path, temp_dir, shrink_factor, max_iterations, resampling_method, rotation_angle
         )
 
         if not frame_paths or final_image is None:
             return
 
-        if not save_image_with_format(final_image, output_path, frame_format):
+        if not save_image_with_format(final_image, output_path, output_format):
             print("Failed to save the final image.")
             return
 
@@ -149,7 +155,7 @@ def create_droste_image_effect(image_path, output_path, shrink_factor, max_itera
             print(f"Include Reverse: {include_reverse}")
             print(f"Save Reversed Clip: {save_reversed_clip}")
         print(f"Image Resampling Method: {resampling_method}")
-        print(f"Frame Format: {frame_format}")
+        print(f"Output Image Format: {output_format}")
         print(f"Rotation Angle: {rotation_angle}")
 
     except Exception as e:
@@ -158,15 +164,17 @@ def create_droste_image_effect(image_path, output_path, shrink_factor, max_itera
         # Cleanup the temporary directory
         if temp_dir:
             cleanup_temp_dir(temp_dir)
+        
+        end_time = time.time()
+        print(f"Total time for creating Droste effect: {end_time - start_time:.2f} seconds.")
 
 def save_image_with_format(image, path, format):
     try:
-        # Check if the frame format is JPEG or JPG and the image mode is RGBA
+        # Check if the format is JPEG or JPG and the image mode is RGBA
+        if format in ['jpeg', 'jpg'] and image.mode == 'RGBA':
+            image = image.convert('RGB')
+        # Save with high quality for JPEG
         if format in ['jpeg', 'jpg']:
-            # Convert to RGB before saving if necessary
-            if image.mode == 'RGBA':
-                image = image.convert('RGB')
-            # Save with high quality
             image.save(path, quality=100)
         else:
             # Save in the current mode for other formats
@@ -234,8 +242,8 @@ def main():
     parser.add_argument("--include_reverse", type=lambda x: (str(x).lower() in ['yes', 'true']), help="Include reversed clip in video (yes/true or no/false)")
     parser.add_argument("--save_reversed_clip", type=lambda x: (str(x).lower() in ['yes', 'true']), help="Save reversed clip by itself (yes/true or no/false)")
     parser.add_argument("--resampling_method", help="Image Resampling Method")
-    parser.add_argument("--frame_format", help="Frame Format")
     parser.add_argument("--rotation_angle", type=float, help="Rotation angle per iteration")
+    parser.add_argument("--output_format", help="Format for the output image", choices=['png', 'jpg', 'jpeg', 'bmp', 'webp'], default='bmp')
     parser.add_argument("--output_path", help="Path for the output image", default="output_image.bmp")
 
     args = parser.parse_args()
@@ -248,8 +256,8 @@ def main():
             sys.exit(1)
 
         # Validate other required arguments
-        if args.shrink_factor is None or args.max_iterations is None or args.resampling_method is None or args.frame_format is None or args.rotation_angle is None:
-            parser.error("All arguments (shrink_factor, max_iterations, resampling_method, frame_format, rotation_angle) are required for command-line mode.")
+        if args.shrink_factor is None or args.max_iterations is None or args.resampling_method is None or args.output_format is None or args.rotation_angle is None:
+            parser.error("All arguments (shrink_factor, max_iterations, resampling_method, output_format, rotation_angle) are required for command-line mode.")
 
         # Validate numerical arguments
         if args.shrink_factor is not None and not (0 < args.shrink_factor <= 1):
@@ -274,12 +282,6 @@ def main():
             print(f"Error: Invalid resampling method. Choose from {', '.join(valid_resampling_methods)}.")
             sys.exit(1)
 
-        # Validate frame format
-        valid_frame_formats = ['png', 'jpg', 'jpeg', 'bmp', 'webp']
-        if args.frame_format and args.frame_format.lower() not in valid_frame_formats:
-            print(f"Error: Invalid frame format. Choose from {', '.join(valid_frame_formats)}.")
-            sys.exit(1)
-
         # Set default values for optional arguments if not provided
         args.save_timelapse = args.save_timelapse if args.save_timelapse is not None else True
         args.fps = args.fps if args.fps is not None else 10
@@ -292,7 +294,7 @@ def main():
         unique_suffix = f"{base_filename}_{timestamp}"
 
         # Apply the unique suffix to the output paths
-        output_image_path = f"output_{unique_suffix}.{args.frame_format}"
+        output_image_path = f"output_{unique_suffix}.{args.output_format}"
         timelapse_video_path = f"time_lapse_{unique_suffix}.mp4" if args.save_timelapse else None
         reversed_clip_path = f"reversed_clip_{unique_suffix}.mp4" if args.save_reversed_clip else None
 
@@ -301,7 +303,7 @@ def main():
             args.image_path, output_image_path, args.shrink_factor, args.max_iterations,
             args.save_timelapse, args.fps, args.include_reverse, timelapse_video_path,
             reversed_clip_path, args.save_reversed_clip, unique_suffix,
-            args.resampling_method, args.frame_format, args.rotation_angle
+            args.resampling_method, args.rotation_angle, args.output_format
         )
     else:
         # GUI mode
@@ -356,10 +358,10 @@ def main():
             resampling_options = ['NEAREST', 'BOX', 'BILINEAR', 'HAMMING', 'BICUBIC', 'LANCZOS']
             resampling_method_input = get_input_from_options("Enter Image Resampling Method", resampling_options, root)
             resampling_method = resampling_method_input.upper()
-
-            # Frame Format: Select the format for saving frames (supports PNG, JPG, JPEG, BMP).
-            frame_format_options = ['png', 'jpg', 'jpeg', 'bmp', 'webp']
-            frame_format = get_input_from_options("Enter Frame Format", frame_format_options, root)
+            
+            # Add a dialog for choosing the output image format
+            output_format_options = ['png', 'jpg', 'jpeg', 'bmp', 'webp']
+            output_format = get_input_from_options("Enter Output Image Format", output_format_options, root)
 
             # Rotation Angle: Define the angle of rotation applied to each image iteration.
             while True:
@@ -376,7 +378,7 @@ def main():
             base_filename = os.path.splitext(os.path.basename(file_path))[0]
             timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
             unique_suffix = f"{base_filename}_{timestamp}"
-            output_image_path = f"output_{unique_suffix}.{frame_format}"
+            output_image_path = f"output_{unique_suffix}.{output_format}"
             timelapse_video_path = f"time_lapse_{unique_suffix}.mp4" if save_timelapse else None
             reversed_clip_path = f"reversed_clip_{unique_suffix}.mp4" if save_reversed_clip else None
 
@@ -385,7 +387,7 @@ def main():
                 file_path, output_image_path, shrink_factor, max_iterations,
                 save_timelapse, fps, include_reverse, timelapse_video_path,
                 reversed_clip_path, save_reversed_clip, unique_suffix,
-                resampling_method, frame_format, rotation_angle
+                resampling_method, rotation_angle, output_format
             )
             print(f"Image saved as {output_image_path}")
 
