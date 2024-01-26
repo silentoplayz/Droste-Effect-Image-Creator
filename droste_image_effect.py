@@ -19,8 +19,8 @@ def cleanup_temp_dir(temp_dir):
     except Exception as e:
         print(f"Error cleaning up temporary files: {e}")
 
-def create_droste_image_effect(image_path, output_path, shrink_factor, max_iterations, save_timelapse, fps, include_reverse, timelapse_video_path, reversed_clip_path, save_reversed_clip, unique_suffix, resampling_method, frame_format, rotation_angle):
-    temp_dir = None
+def process_image_for_droste_effect(image_path, temp_dir, shrink_factor, max_iterations, resampling_method, frame_format, rotation_angle):
+    frame_paths = []
     try:
         # Load the original image
         original_image = Image.open(image_path)
@@ -32,9 +32,6 @@ def create_droste_image_effect(image_path, output_path, shrink_factor, max_itera
         current_image = original_image.copy()
         current_size = original_image.size
         total_rotation = 0  # Initialize total rotation
-
-        # Create a manual temporary directory
-        temp_dir = tempfile.mkdtemp()
         frame_paths = []
 
         # Save the original image as the first frame
@@ -86,30 +83,60 @@ def create_droste_image_effect(image_path, output_path, shrink_factor, max_itera
             frame_path = os.path.join(temp_dir, f"frame_{iteration}.{frame_format}")
             if not save_image_with_format(original_image, frame_path, frame_format):
                 print(f"Failed to save frame {iteration}.")
-                return
+                return [], None
 
             frame_paths.append(frame_path)
+            current_size = (new_width, new_height)
 
-        # Save the final image
-        if not save_image_with_format(original_image, output_path, frame_format):
+        return frame_paths, original_image
+    except Exception as e:
+        print(f"Error in image processing: {e}")
+        return [], None
+
+def create_videos(frame_paths, timelapse_video_path, reversed_clip_path, fps, include_reverse, save_reversed_clip):
+    if not frame_paths:
+        return False
+
+    try:
+        if not create_timelapse_video(frame_paths, timelapse_video_path, fps, include_reverse):
+            print("Failed to create the time-lapse video.")
+            return False
+
+        if save_reversed_clip:
+            if not create_timelapse_video(frame_paths[::-1], reversed_clip_path, fps, False):
+                print("Failed to create the reversed clip.")
+                return False
+
+        return True
+    except Exception as e:
+        print(f"Error in video creation: {e}")
+        return False
+
+def create_droste_image_effect(image_path, output_path, shrink_factor, max_iterations, save_timelapse, fps, include_reverse, timelapse_video_path, reversed_clip_path, save_reversed_clip, unique_suffix, resampling_method, frame_format, rotation_angle):
+    temp_dir = None
+    try:
+        temp_dir = tempfile.mkdtemp()
+        frame_paths, final_image = process_image_for_droste_effect(
+            image_path, temp_dir, shrink_factor, max_iterations, resampling_method, frame_format, rotation_angle
+        )
+
+        if not frame_paths or final_image is None:
+            return
+
+        if not save_image_with_format(final_image, output_path, frame_format):
             print("Failed to save the final image.")
             return
 
         print("Image processing complete.")
 
-        # Create the time-lapse video if required
-        if save_timelapse:
-            if not create_timelapse_video(frame_paths, timelapse_video_path, fps, include_reverse):
-                print("Failed to create the time-lapse video.")
+        # Create the time-lapse video and/or reversed clip if required
+        if save_timelapse or save_reversed_clip:
+            if not create_videos(frame_paths, timelapse_video_path, reversed_clip_path, fps, include_reverse, save_reversed_clip):
+                print("Failed to create videos.")
             else:
-                print(f"Time-lapse video saved as {timelapse_video_path}")
-
-            # Create the reversed clip if required and save it separately
-            if save_reversed_clip:
-                reversed_clip_path = f"reversed_clip_{unique_suffix}.mp4"
-                if not create_timelapse_video(frame_paths[::-1], reversed_clip_path, fps, False):
-                    print("Failed to create the reversed clip.")
-                else:
+                if save_timelapse:
+                    print(f"Time-lapse video saved as {timelapse_video_path}")
+                if save_reversed_clip:
                     print(f"Reversed clip saved as {reversed_clip_path}")
 
         # Display the chosen parameters
