@@ -243,7 +243,7 @@ def main():
     if args.image_path:
         # Command-line mode
         # Validate the image path
-        if not os.path.isfile(args.image_path):
+        if args.image_path and not os.path.isfile(args.image_path):
             print(f"Error: The specified image path does not exist: {args.image_path}")
             sys.exit(1)
 
@@ -252,12 +252,16 @@ def main():
             parser.error("All arguments (shrink_factor, max_iterations, resampling_method, frame_format, rotation_angle) are required for command-line mode.")
 
         # Validate numerical arguments
-        if not (0 < args.shrink_factor <= 1):
+        if args.shrink_factor is not None and not (0 < args.shrink_factor <= 1):
             print("Error: Shrink factor must be greater than 0 and less than or equal to 1.")
             sys.exit(1)
 
-        if args.max_iterations <= 0:
+        if args.max_iterations is not None and args.max_iterations <= 0:
             print("Error: Maximum iterations must be a positive integer.")
+            sys.exit(1)
+
+        if args.fps is not None and args.fps <= 0:
+            print("Error: FPS must be a positive integer.")
             sys.exit(1)
 
         if args.rotation_angle is not None and not (-360 <= args.rotation_angle <= 360):
@@ -266,13 +270,13 @@ def main():
 
         # Validate resampling method
         valid_resampling_methods = ['NEAREST', 'BOX', 'BILINEAR', 'HAMMING', 'BICUBIC', 'LANCZOS']
-        if args.resampling_method.upper() not in valid_resampling_methods:
+        if args.resampling_method and args.resampling_method.upper() not in valid_resampling_methods:
             print(f"Error: Invalid resampling method. Choose from {', '.join(valid_resampling_methods)}.")
             sys.exit(1)
 
         # Validate frame format
         valid_frame_formats = ['png', 'jpg', 'jpeg', 'bmp', 'webp']
-        if args.frame_format.lower() not in valid_frame_formats:
+        if args.frame_format and args.frame_format.lower() not in valid_frame_formats:
             print(f"Error: Invalid frame format. Choose from {', '.join(valid_frame_formats)}.")
             sys.exit(1)
 
