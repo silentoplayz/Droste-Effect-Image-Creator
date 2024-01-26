@@ -1,4 +1,5 @@
 import argparse
+import atexit
 import datetime
 import os
 import shutil
@@ -6,6 +7,7 @@ import sys
 import tempfile
 import time
 import tkinter as tk
+import traceback
 from tkinter import filedialog, messagebox
 from PIL import Image
 from moviepy.editor import ImageSequenceClip, concatenate_videoclips, vfx
