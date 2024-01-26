@@ -29,7 +29,7 @@ Before using this script, please ensure you have the following installed:
 
 ## Console-Based Usage:
   ```pythong
-  python droste_image_effect.py --image_path <path_to_image> --shrink_factor <shrink_factor_value> --max_iterations <max_iterations_value> --save_timelapse <yes/no> --fps <fps_value> --include_reverse <yes/no> --save_reversed_clip <yes/no> --resampling_method <resampling_method_value> --rotation_angle <rotation_angle_value> --output_format <output_format_value>
+  python droste_image_effect.py --image_path <path_to_image> --shrink_factor <shrink_factor_value> --max_iterations <max_iterations_value> --save_timelapse <yes/no> --fps <fps_value> --include_reverse <yes/no> --save_reversed <yes/no> --resampling_method <resampling_method_value> --rotation_angle <rotation_angle_value> --output_format <output_format_value>
   ```
 **Replace the placeholders (`<...>`) with the actual values you want to use for console-based execution. Feel free to use either the GUI or console-based command as per your preference.**
 
@@ -45,7 +45,7 @@ Before using this script, please ensure you have the following installed:
 | Save Timelapse (yes/no)           | Specify whether to save a timelapse video of the image processing. Respond `yes` to save a video showing each iteration. | `--save_timelapse yes`                                           | No       | True                     |
 | FPS for Timelapse (integer)       | Enter the Frames Per Second (FPS) for the timelapse video. Higher FPS results in a smoother video.                  | `--fps 30`                                                      | No       | 10                       |
 | Include Reverse (yes/no)          | Decide whether to include a reversed clip in the timelapse video, creating a seamless loop effect.                   | `--include_reverse no`                                           | No       | False                    |
-| Save Reversed Clip (yes/no)       | Choose whether to save the reversed clip separately. Respond `yes` to save a reversed clip showing the image sequence in reverse. | `--save_reversed_clip yes`                                      | No       | True                     |
+| Save Reversed Clip (yes/no)       | Choose whether to save the reversed clip separately. Respond `yes` to save a reversed clip showing the image sequence in reverse. | `--save_reversed yes`                                      | No       | True                     |
 | Image Resampling Method (string)  | Select the resampling method for image processing (e.g., `Nearest`, `Box`, `Bilinear`, `Hamming`, `Bicubic`, `Lanczos`). | `--resampling_method Bilinear`                                  | No      | Bilinear                 |
 | Rotation Angle (float)            | Enter the rotation angle per iteration to apply a cumulative rotation effect to each image iteration. Use a negative number to rotate the image clockwise. | `--rotation_angle 60`                                           | No      | 0.0                      |
 | Output Format (string)            | Choose the format for saving the final output image (e.g., `png`, `jpg`, `jpeg`, `bmp`, `webp`).                      | `--output_format bmp`                                           | No       | bmp                      |
