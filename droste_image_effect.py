@@ -19,6 +19,7 @@ def cleanup_temp_dir(temp_dir):
         print(f"Temporary files cleaned up: {temp_dir}")
     except Exception as e:
         print(f"Error cleaning up temporary files: {e}")
+        # traceback.print_exc()
 
 def process_image_for_droste_effect(image_path, temp_dir, shrink_factor, max_iterations, resampling_method, rotation_angle):
     frame_paths = []
@@ -103,6 +104,7 @@ def process_image_for_droste_effect(image_path, temp_dir, shrink_factor, max_ite
         return frame_paths, original_image
     except Exception as e:
         print(f"Error in image processing: {e}")
+        # traceback.print_exc()
         return [], None
 
 def create_videos(frame_paths, timelapse_video_path, reversed_clip_path, fps, include_reverse, save_reversed_clip):
@@ -126,6 +128,7 @@ def create_videos(frame_paths, timelapse_video_path, reversed_clip_path, fps, in
         return True
     except Exception as e:
         print(f"Error in video creation: {e}")
+        # traceback.print_exc()
         return False
 
 def create_droste_image_effect(image_path, output_path, shrink_factor, max_iterations, save_timelapse, fps, include_reverse, timelapse_video_path, reversed_clip_path, save_reversed_clip, unique_suffix, resampling_method, rotation_angle, output_format):
@@ -172,6 +175,7 @@ def create_droste_image_effect(image_path, output_path, shrink_factor, max_itera
 
     except Exception as e:
         print(f"An error occurred during image processing: {e}")
+        # traceback.print_exc()
     finally:
         # Cleanup the temporary directory
         if temp_dir:
@@ -194,6 +198,7 @@ def save_image_with_format(image, path, format):
         return True
     except Exception as e:
         print(f"An error occurred while saving the image: {e}")
+        # traceback.print_exc()
         return False
 
 def create_timelapse_video(frame_paths, output_filename, fps, include_reverse):
@@ -221,7 +226,15 @@ def create_timelapse_video(frame_paths, output_filename, fps, include_reverse):
         traceback.print_exc()
         return False
 
-def validate_parameters(shrink_factor_str, max_iterations_str, save_timelapse_str, fps_str, include_reverse_str, save_reversed_clip_str, resampling_method, rotation_angle_str, output_format):
+def validate_parameters(image_path, shrink_factor_str, max_iterations_str, save_timelapse_str, fps_str, include_reverse_str, save_reversed_clip_str, resampling_method, rotation_angle_str, output_format):
+    # Check for None values in required parameters
+    if any(param is None for param in [shrink_factor_str, max_iterations_str, resampling_method, rotation_angle_str, output_format]):
+        raise ValueError("All arguments (shrink_factor, max_iterations, resampling_method, rotation_angle, output_format) are required  for command-line arguments mode.")
+
+    # Image Path Validation
+    if not os.path.isfile(image_path):
+        raise ValueError(f"The specified image path does not exist or is not a file: {image_path}")
+
     # Shrink Factor Validation
     if not shrink_factor_str:
         raise ValueError("Shrink factor is required.")
@@ -392,15 +405,15 @@ class CustomDialog(tk.Toplevel):
 def main():
     # Command-line argument parsing
     parser = argparse.ArgumentParser(description="Create Droste Image Effect")
-    parser.add_argument("--image_path", help="Path to the input image")
-    parser.add_argument("--shrink_factor", type=float, help="Shrink factor for the image")
-    parser.add_argument("--max_iterations", type=int, help="Maximum number of iterations")
-    parser.add_argument("--save_timelapse", type=lambda x: (str(x).lower() in ['yes', 'true']), help="Save timelapse video (yes/true or no/false)")
-    parser.add_argument("--fps", type=int, help="Frames per second for timelapse video")
-    parser.add_argument("--include_reverse", type=lambda x: (str(x).lower() in ['yes', 'true']), help="Include reversed clip in video (yes/true or no/false)")
-    parser.add_argument("--save_reversed_clip", type=lambda x: (str(x).lower() in ['yes', 'true']), help="Save reversed clip by itself (yes/true or no/false)")
-    parser.add_argument("--resampling_method", help="Image Resampling Method")
-    parser.add_argument("--rotation_angle", type=float, help="Rotation angle per iteration")
+    parser.add_argument("--image_path", help="Path to the input image", required=True)
+    parser.add_argument("--shrink_factor", type=float, help="Shrink factor for the image", default=0.95)
+    parser.add_argument("--max_iterations", type=int, help="Maximum number of iterations", default=100)
+    parser.add_argument("--save_timelapse", type=lambda x: (str(x).lower() in ['yes', 'true']), help="Save timelapse video (yes/true or no/false)", default=True)
+    parser.add_argument("--fps", type=int, help="Frames per second for timelapse video", default=10)
+    parser.add_argument("--include_reverse", type=lambda x: (str(x).lower() in ['yes', 'true']), help="Include reversed clip in video (yes/true or no/false)", default=False)
+    parser.add_argument("--save_reversed_clip", type=lambda x: (str(x).lower() in ['yes', 'true']), help="Save reversed clip by itself (yes/true or no/false)", default=True)
+    parser.add_argument("--resampling_method", help="Image Resampling Method", default='Bilinear')
+    parser.add_argument("--rotation_angle", type=float, help="Rotation angle per iteration", default=0.0)
     parser.add_argument("--output_format", help="Format for the output image", choices=['png', 'jpg', 'jpeg', 'bmp', 'webp'], default='bmp')
     parser.add_argument("--output_path", help="Path for the output image", default="output_image.bmp")
 
@@ -411,16 +424,11 @@ def main():
         try:
             # Convert command-line arguments to strings for validation
             validated_params = validate_parameters(
-                str(args.shrink_factor), str(args.max_iterations), str(args.save_timelapse),
-                str(args.fps), str(args.include_reverse), str(args.save_reversed_clip),
-                args.resampling_method, str(args.rotation_angle), args.output_format
+            args.image_path,
+            str(args.shrink_factor), str(args.max_iterations), str(args.save_timelapse),
+            str(args.fps), str(args.include_reverse), str(args.save_reversed_clip),
+            args.resampling_method, str(args.rotation_angle), args.output_format
             )
-            
-            # Set default values for optional arguments if not provided
-            args.save_timelapse = args.save_timelapse if args.save_timelapse is not None else True
-            args.fps = args.fps if args.fps is not None else 10
-            args.include_reverse = args.include_reverse if args.include_reverse is not None else False
-            args.save_reversed_clip = args.save_reversed_clip if args.save_reversed_clip is not None else True
 
             # Extract validated parameters
             shrink_factor = validated_params['shrink_factor']
@@ -498,6 +506,7 @@ def main():
 
         except Exception as e:
             print(f"An error occurred: {e}")
+            traceback.print_exc()
             sys.exit(1)
 
 if __name__ == "__main__":
