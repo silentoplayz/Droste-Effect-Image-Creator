@@ -36,20 +36,20 @@ Before using this script, please ensure you have the following installed:
 # Parameters:
 
 | Parameter                         | Description                                                                                                       | Console Command Example (if applicable)                           |
-|-----------------------------------|-------------------------------------------------------------------------------------------------------------------|----------------------------------------------------------|
-| Shrink Factor (float, required)   | Enter a shrink factor (e.g., 0.99) to determine how much each iteration of the image is reduced in size.         | `--shrink_factor 0.99`                                     |
-| Max Iterations (integer, required)| Set the maximum number of iterations. Higher values result in more repetitions of the shrinking and pasting process. | `--max_iterations 200`                                    |
-| Save Timelapse (yes/no)           | Specify whether to save a timelapse video of the image processing. Respond 'yes' to save a video showing each iteration. | `--save_timelapse yes`                                    |
-| FPS for Timelapse (integer)       | Enter the Frames Per Second (FPS) for the timelapse video. Higher FPS results in a smoother video.                  | `--fps 30`                                               |
-| Include Reverse (yes/no)          | Decide whether to include a reversed clip in the timelapse video, creating a seamless loop effect.                   | `--include_reverse no`                                  |
-| Save Reversed Clip (yes/no)       | Choose whether to save the reversed clip separately. Respond 'yes' to save a reversed clip showing the image sequence in reverse. | `--save_reversed_clip yes`                               |
-| Image Resampling Method (string)  | Select the resampling method for image processing (e.g., 'NEAREST', 'BOX', 'BILINEAR', 'HAMMING', 'BICUBIC', 'LANCZOS').                                    | `--resampling_method BILINEAR`                           |
-| Frame Format (string)             | Choose the format for saving frames during image processing (e.g., 'png', 'jpg', 'jpeg', 'bmp', 'webp').                                   | `--frame_format bmp`                                     |
-| Rotation Angle (float)            | Enter the rotation angle per iteration (e.g., 10 degrees) to apply a cumulative rotation effect to each image iteration. Use a negative number to rotate the image clockwise. | `--rotation_angle 60`                                    |
-| `--image_path` (string) | Path to the input image.                                                                                         | `--image_path path/to/your/image.jpg`                                                      |
+|-----------------------------------|-------------------------------------------------------------------------------------------------------------------|-------------------------------------------------------------------|
+| Shrink Factor (float, required)   | Enter a shrink factor (e.g., 0.99) to determine how much each iteration of the image is reduced in size.         | `--shrink_factor 0.99`                                           |
+| Max Iterations (integer, required)| Set the maximum number of iterations. Higher values result in more repetitions of the shrinking and pasting process. | `--max_iterations 200`                                           |
+| Save Timelapse (yes/no)           | Specify whether to save a timelapse video of the image processing. Respond 'yes' to save a video showing each iteration. | `--save_timelapse yes`                                           |
+| FPS for Timelapse (integer)       | Enter the Frames Per Second (FPS) for the timelapse video. Higher FPS results in a smoother video.                  | `--fps 30`                                                      |
+| Include Reverse (yes/no)          | Decide whether to include a reversed clip in the timelapse video, creating a seamless loop effect.                   | `--include_reverse no`                                           |
+| Save Reversed Clip (yes/no)       | Choose whether to save the reversed clip separately. Respond 'yes' to save a reversed clip showing the image sequence in reverse. | `--save_reversed_clip yes`                                      |
+| Image Resampling Method (string)  | Select the resampling method for image processing (e.g., 'NEAREST', 'BOX', 'BILINEAR', 'HAMMING', 'BICUBIC', 'LANCZOS'). | `--resampling_method BILINEAR`                                  |
+| Rotation Angle (float)            | Enter the rotation angle per iteration (e.g., 10 degrees) to apply a cumulative rotation effect to each image iteration. Use a negative number to rotate the image clockwise. | `--rotation_angle 60`                                           |
+| Output Format (string)            | Choose the format for saving the final output image (e.g., 'png', 'jpg', 'jpeg', 'bmp', 'webp').                      | `--output_format jpg`                                           |
+| `--image_path` (string, required) | Path to the input image.                                                                                         | `--image_path path/to/your/image.jpg`                           |
 
 # Output
-The final processed image is saved as `output_{unique_suffix}.{frame_format}` in the script's directory. If you choose to save a timelapse video, it will be saved as `time_lapse_{unique_suffix}.mp4`. If you opt to save the reversed clip separately, it will be named `reversed_clip_{unique_suffix}.mp4`.
+The final processed image is saved as `output_{unique_suffix}.{output_format}` in the script's directory. If you choose to save a timelapse video, it will be saved as `time_lapse_{unique_suffix}.mp4`. If you opt to save the reversed clip separately, it will be named `reversed_clip_{unique_suffix}.mp4`.
 
 # Output Examples:
 ![output_photo-1607222337192-910fb1a5c661_20240124_160451](https://github.com/Silentoplayz/Droste-Effect-Image-Creator/assets/50341825/78788a25-9779-4a27-bfdd-0aae6694a6b7)
