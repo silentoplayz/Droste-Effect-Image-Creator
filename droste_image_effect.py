@@ -253,15 +253,17 @@ def main():
         args.include_reverse = args.include_reverse if args.include_reverse is not None else False
         args.save_reversed_clip = args.save_reversed_clip if args.save_reversed_clip is not None else True
 
-        # Generate output paths based on input image path
-        base_filename = os.path.splitext(os.path.basename(args.image_path))[0]
+        # Generate the unique suffix
         timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+        base_filename = os.path.splitext(os.path.basename(args.image_path))[0]
         unique_suffix = f"{base_filename}_{timestamp}"
-        output_image_path = args.output_path
-        timelapse_video_path = f"time_lapse_{os.path.splitext(os.path.basename(output_image_path))[0]}.mp4" if args.save_timelapse else None
-        reversed_clip_path = f"reversed_clip_{os.path.splitext(os.path.basename(output_image_path))[0]}.mp4" if args.save_reversed_clip else None
 
-        # Call the image processing function
+        # Apply the unique suffix to the output paths
+        output_image_path = f"output_{unique_suffix}.{args.frame_format}"
+        timelapse_video_path = f"time_lapse_{unique_suffix}.mp4" if args.save_timelapse else None
+        reversed_clip_path = f"reversed_clip_{unique_suffix}.mp4" if args.save_reversed_clip else None
+
+        # Call the image processing function with the updated paths
         create_droste_image_effect(
             args.image_path, output_image_path, args.shrink_factor, args.max_iterations,
             args.save_timelapse, args.fps, args.include_reverse, timelapse_video_path,
