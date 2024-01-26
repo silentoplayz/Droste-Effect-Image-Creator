@@ -225,7 +225,7 @@ def get_input_from_options(prompt, options, parent=None):
 
 def main():
     # Command-line argument parsing
-    parser = argparse.ArgumentParser(description="Create Dostre Image Effect")
+    parser = argparse.ArgumentParser(description="Create Droste Image Effect")
     parser.add_argument("--image_path", help="Path to the input image")
     parser.add_argument("--shrink_factor", type=float, help="Shrink factor for the image")
     parser.add_argument("--max_iterations", type=int, help="Maximum number of iterations")
@@ -242,11 +242,40 @@ def main():
 
     if args.image_path:
         # Command-line mode
-        # Ensure all required arguments are provided
-        required_args = [args.shrink_factor, args.max_iterations, args.resampling_method, args.frame_format, args.rotation_angle]
-        if any(arg is None for arg in required_args):
-            parser.error("All arguments are required for command-line mode.")
-        
+        # Validate the image path
+        if not os.path.isfile(args.image_path):
+            print(f"Error: The specified image path does not exist: {args.image_path}")
+            sys.exit(1)
+
+        # Validate other required arguments
+        if args.shrink_factor is None or args.max_iterations is None or args.resampling_method is None or args.frame_format is None or args.rotation_angle is None:
+            parser.error("All arguments (shrink_factor, max_iterations, resampling_method, frame_format, rotation_angle) are required for command-line mode.")
+
+        # Validate numerical arguments
+        if not (0 < args.shrink_factor <= 1):
+            print("Error: Shrink factor must be greater than 0 and less than or equal to 1.")
+            sys.exit(1)
+
+        if args.max_iterations <= 0:
+            print("Error: Maximum iterations must be a positive integer.")
+            sys.exit(1)
+
+        if args.rotation_angle is not None and not (-360 <= args.rotation_angle <= 360):
+            print("Error: Rotation angle must be between -360 and 360 degrees.")
+            sys.exit(1)
+
+        # Validate resampling method
+        valid_resampling_methods = ['NEAREST', 'BOX', 'BILINEAR', 'HAMMING', 'BICUBIC', 'LANCZOS']
+        if args.resampling_method.upper() not in valid_resampling_methods:
+            print(f"Error: Invalid resampling method. Choose from {', '.join(valid_resampling_methods)}.")
+            sys.exit(1)
+
+        # Validate frame format
+        valid_frame_formats = ['png', 'jpg', 'jpeg', 'bmp', 'webp']
+        if args.frame_format.lower() not in valid_frame_formats:
+            print(f"Error: Invalid frame format. Choose from {', '.join(valid_frame_formats)}.")
+            sys.exit(1)
+
         # Set default values for optional arguments if not provided
         args.save_timelapse = args.save_timelapse if args.save_timelapse is not None else True
         args.fps = args.fps if args.fps is not None else 10
