@@ -7,6 +7,7 @@ import sys
 import tempfile
 import time
 import tkinter as tk
+import tkinter.ttk as ttk
 import traceback
 from tkinter import filedialog, messagebox
 from PIL import Image
@@ -228,46 +229,62 @@ class CustomDialog(tk.Toplevel):
         # Shrink Factor
         tk.Label(self, text="Shrink Factor (0.01 to 1.00):").pack()
         self.shrink_factor_entry = tk.Entry(self)
+        self.shrink_factor_entry.insert(0, "0.95")
         self.shrink_factor_entry.pack()
 
         # Max Iterations
         tk.Label(self, text="Max Iterations:").pack()
         self.max_iterations_entry = tk.Entry(self)
+        self.max_iterations_entry.insert(0, "100")
         self.max_iterations_entry.pack()
 
-        # Save Timelapse
-        tk.Label(self, text="Save Timelapse (yes/no):").pack()
-        self.save_timelapse_entry = tk.Entry(self)
+        # Save Timelapse with combobox
+        tk.Label(self, text="Save Timelapse:").pack()
+        self.save_timelapse_var = tk.StringVar()
+        self.save_timelapse_entry = ttk.Combobox(self, textvariable=self.save_timelapse_var, values=["yes", "no"], state="readonly")
+        self.save_timelapse_entry.set("yes")  # Default value
         self.save_timelapse_entry.pack()
 
         # FPS
         tk.Label(self, text="FPS for Timelapse:").pack()
         self.fps_entry = tk.Entry(self)
+        self.fps_entry.insert(0, "20")
         self.fps_entry.pack()
-
-        # Include Reverse
-        tk.Label(self, text="Include Reverse in Video (yes/no):").pack()
-        self.include_reverse_entry = tk.Entry(self)
+        
+        # Include Reverse with combobox
+        tk.Label(self, text="Include Reverse in Video:").pack()
+        self.include_reverse_var = tk.StringVar()
+        self.include_reverse_entry = ttk.Combobox(self, textvariable=self.include_reverse_var, values=["yes", "no"], state="readonly")
+        self.include_reverse_entry.set("no")  # Default value
         self.include_reverse_entry.pack()
 
-        # Save Reversed Clip
-        tk.Label(self, text="Save Reversed Clip (yes/no):").pack()
-        self.save_reversed_clip_entry = tk.Entry(self)
+        # Save Reversed Clip with combobox
+        tk.Label(self, text="Save Reversed Clip:").pack()
+        self.save_reversed_clip_var = tk.StringVar()
+        self.save_reversed_clip_entry = ttk.Combobox(self, textvariable=self.save_reversed_clip_var, values=["yes", "no"], state="readonly")
+        self.save_reversed_clip_entry.set("yes")  # Default value
         self.save_reversed_clip_entry.pack()
 
-        # Resampling Method
+        # Resampling Method with combobox
         tk.Label(self, text="Resampling Method:").pack()
-        self.resampling_method_entry = tk.Entry(self)
+        resampling_methods = ["Nearest", "Box", "Bilinear", "Hamming", "Bicubic", "Lanczos"]
+        self.resampling_method_var = tk.StringVar()
+        self.resampling_method_entry = ttk.Combobox(self, textvariable=self.resampling_method_var, values=resampling_methods, state="readonly")
+        self.resampling_method_entry.set("Bilinear")  # Default value
         self.resampling_method_entry.pack()
 
         # Rotation Angle
         tk.Label(self, text="Rotation Angle:").pack()
         self.rotation_angle_entry = tk.Entry(self)
+        self.rotation_angle_entry.insert(0, "5")
         self.rotation_angle_entry.pack()
 
-        # Output Format
-        tk.Label(self, text="Output Format (png/jpg/jpeg/bmp/webp):").pack()
-        self.output_format_entry = tk.Entry(self)
+        # Output Format with combobox
+        tk.Label(self, text="Output Format:").pack()
+        formats = ["png", "jpg", "jpeg", "bmp", "webp"]
+        self.output_format_var = tk.StringVar()
+        self.output_format_entry = ttk.Combobox(self, textvariable=self.output_format_var, values=formats, state="readonly")
+        self.output_format_entry.set("png")  # Default value
         self.output_format_entry.pack()
 
         # Submit Button
@@ -326,7 +343,7 @@ class CustomDialog(tk.Toplevel):
 
             # Resampling Method Validation
             resampling_method = self.resampling_method_entry.get().lower()
-            valid_resampling_methods = ['nearest', 'box', 'bilinear', 'hamming', 'bicubic', 'lanczos']
+            valid_resampling_methods = ['Nearest', 'Box', 'Bilinear', 'Hamming', 'Bicubic', 'Lanczos']
             if resampling_method not in valid_resampling_methods:
                 raise ValueError(f"Invalid resampling method. Choose from {', '.join(valid_resampling_methods)}.")
 
