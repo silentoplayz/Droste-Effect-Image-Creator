@@ -305,8 +305,9 @@ def validate_parameters(image_path, shrink_factor_str, max_iterations_str, save_
     }
 
 class CustomDialog(tk.Toplevel):
-    def __init__(self, parent):
+    def __init__(self, parent, file_path):
         super().__init__(parent)
+        self.file_path = file_path
         self.title("Droste Effect Parameters")
 
         # Shrink Factor
@@ -391,6 +392,7 @@ class CustomDialog(tk.Toplevel):
 
             # Validate and process the parameters
             validated_params = validate_parameters(
+                self.file_path,
                 shrink_factor_str, max_iterations_str, save_timelapse_str, fps_str,
                 include_reverse_str, save_reversed_str, resampling_method,
                 rotation_angle_str, output_format
@@ -408,10 +410,10 @@ def main():
     parser.add_argument("--image_path", help="Path to the input image")
     parser.add_argument("--shrink_factor", type=float, help="Shrink factor for the image", default=0.95)
     parser.add_argument("--max_iterations", type=int, help="Maximum number of iterations", default=100)
-    parser.add_argument("--save_timelapse", type=lambda x: (str(x).lower() in ['yes', 'true']), help="Save timelapse video (yes/true or no/false)", default=True)
+    parser.add_argument("--save_timelapse", action='store_true', help="Save timelapse video (yes/true or no/false)")
     parser.add_argument("--fps", type=int, help="Frames per second for timelapse video", default=10)
-    parser.add_argument("--include_reverse", type=lambda x: (str(x).lower() in ['yes', 'true']), help="Include reversed clip in video (yes/true or no/false)", default=False)
-    parser.add_argument("--save_reversed", type=lambda x: (str(x).lower() in ['yes', 'true']), help="Save reversed clip by itself (yes/true or no/false)", default=True)
+    parser.add_argument("--include_reverse", action='store_true', help="Include reversed clip in video (yes/true or no/false)")
+    parser.add_argument("--save_reversed", action='store_true', help="Save reversed clip by itself (yes/true or no/false)")
     parser.add_argument("--resampling_method", help="Image Resampling Method", default='Bilinear')
     parser.add_argument("--rotation_angle", type=float, help="Rotation angle per iteration", default=0.0)
     parser.add_argument("--output_format", help="Format for the output image", choices=['png', 'jpg', 'jpeg', 'bmp', 'webp'], default='bmp')
@@ -475,7 +477,7 @@ def main():
                 print("No file selected. Exiting the program.")
                 sys.exit(0)
 
-            dialog = CustomDialog(root)
+            dialog = CustomDialog(root, file_path)
             root.wait_window(dialog)
 
             if dialog.result:
