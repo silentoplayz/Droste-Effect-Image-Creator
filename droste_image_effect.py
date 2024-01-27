@@ -433,14 +433,13 @@ def main():
     parser.add_argument("--image_path", help="Path to the input image")
     parser.add_argument("--shrink_factor", type=float, help="Shrink factor for the image", default=0.95)
     parser.add_argument("--max_iterations", type=int, help="Maximum number of iterations", default=100)
-    parser.add_argument("--save_timelapse", action='store_true', help="Save timelapse video (yes/true or no/false)")
+    parser.add_argument("--save_timelapse", type=lambda x: (str(x).lower() in ['yes', 'true']), help="Save timelapse video (yes/true or no/false)", default=True)
     parser.add_argument("--fps", type=int, help="Frames per second for timelapse video", default=10)
-    parser.add_argument("--include_reverse", action='store_true', help="Include reversed clip in video (yes/true or no/false)")
-    parser.add_argument("--save_reversed", action='store_true', help="Save reversed clip by itself (yes/true or no/false)")
+    parser.add_argument("--include_reverse", type=lambda x: (str(x).lower() in ['yes', 'true']), help="Include reversed clip in video (yes/true or no/false)", default=False)
+    parser.add_argument("--save_reversed", type=lambda x: (str(x).lower() in ['yes', 'true']), help="Save reversed clip by itself (yes/true or no/false)", default=True)
     parser.add_argument("--resampling_method", help="Image Resampling Method", default='Bilinear')
     parser.add_argument("--rotation_angle", type=float, help="Rotation angle per iteration", default=0.0)
     parser.add_argument("--output_format", help="Format for the output image", choices=['png', 'jpg', 'jpeg', 'bmp', 'webp'], default='bmp')
-    parser.add_argument("--output_path", help="Path for the output image", default="output_image.bmp")
 
     args = parser.parse_args()
 
