@@ -236,16 +236,26 @@ def validate_parameters(image_path, shrink_factor_str, max_iterations_str, save_
         raise ValueError(f"The specified image path does not exist or is not a file: {image_path}")
 
     # Shrink Factor Validation
-    if not shrink_factor_str:
+    if shrink_factor_str is None or shrink_factor_str.strip() == "":
         raise ValueError("Shrink factor is required.")
-    shrink_factor = float(shrink_factor_str)
+
+    try:
+        shrink_factor = float(shrink_factor_str)
+    except ValueError:
+        raise ValueError("Shrink factor must be a valid floating-point number.")
+
     if not (0 < shrink_factor <= 1):
         raise ValueError("Shrink factor must be between 0.01 and 1.00")
 
     # Max Iterations Validation
-    if not max_iterations_str:
+    if max_iterations_str is None or max_iterations_str.strip() == "":
         raise ValueError("Max iterations is required.")
-    max_iterations = int(max_iterations_str)
+
+    try:
+        max_iterations = int(max_iterations_str)
+    except ValueError:
+        raise ValueError("Max iterations must be a valid integer.")
+
     if max_iterations <= 0:
         raise ValueError("Max iterations must be a positive integer")
 
@@ -255,11 +265,19 @@ def validate_parameters(image_path, shrink_factor_str, max_iterations_str, save_
     save_timelapse = save_timelapse_str.lower() in ['yes', 'true']
 
     # FPS Validation
-    if save_timelapse and not fps_str:
-        raise ValueError("FPS is required for timelapse.")
-    fps = int(fps_str) if fps_str else 10  # Default to 10 if not provided
-    if fps <= 0:
-        raise ValueError("FPS must be a positive integer.")
+    if save_timelapse:
+        if fps_str is None or fps_str.strip() == "":
+            raise ValueError("FPS is required for timelapse.")
+
+        try:
+            fps = int(fps_str)
+        except ValueError:
+            raise ValueError("FPS must be a valid integer.")
+
+        if fps <= 0:
+            raise ValueError("FPS must be a positive integer.")
+    else:
+        fps = 10  # Default value if not saving timelapse
 
     # Include Reverse Validation
     if include_reverse_str.lower() not in ['yes', 'no', 'true', 'false']:
@@ -281,9 +299,14 @@ def validate_parameters(image_path, shrink_factor_str, max_iterations_str, save_
         raise ValueError(f"Invalid resampling method. Choose from {', '.join(valid_resampling_methods)}.")
 
     # Rotation Angle Validation
-    if not rotation_angle_str:
+    if rotation_angle_str is None or rotation_angle_str.strip() == "":
         raise ValueError("Rotation angle is required.")
-    rotation_angle = float(rotation_angle_str)
+
+    try:
+        rotation_angle = float(rotation_angle_str)
+    except ValueError:
+        raise ValueError("Rotation angle must be a valid floating-point number.")
+
     if not (-360 <= rotation_angle <= 360):
         raise ValueError("Rotation angle must be between -360 and 360 degrees")
 
