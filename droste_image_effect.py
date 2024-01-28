@@ -1,5 +1,4 @@
 import argparse
-import atexit
 import datetime
 import os
 import shutil
@@ -11,7 +10,7 @@ import tkinter.ttk as ttk
 import traceback
 from tkinter import filedialog, messagebox
 from PIL import Image
-from moviepy.editor import ImageSequenceClip, concatenate_videoclips, vfx
+from moviepy.editor import ImageSequenceClip, concatenate_videoclips
 
 def cleanup_temp_dir(temp_dir):
     try:
