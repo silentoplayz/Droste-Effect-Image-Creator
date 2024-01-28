@@ -8,7 +8,8 @@ import time
 import tkinter as tk
 import tkinter.ttk as ttk
 import traceback
-from tkinter import filedialog, messagebox
+from tkinter import ttk, messagebox, filedialog
+from tkinter import *
 from PIL import Image
 from moviepy.editor import ImageSequenceClip, concatenate_videoclips
 
@@ -422,6 +423,27 @@ class CustomDialog(tk.Toplevel):
 
         self.result = None
 
+    # Update GUI defaults based on command-line arguments
+    def update_gui_defaults(self, command_line_args):
+        self.shrink_factor_entry.delete(0, tk.END)
+        self.shrink_factor_entry.insert(0, str(command_line_args.shrink_factor))
+
+        self.max_iterations_entry.delete(0, tk.END)
+        self.max_iterations_entry.insert(0, str(command_line_args.max_iterations))
+
+        self.save_timelapse_entry.set("yes" if command_line_args.save_timelapse else "no")
+        self.fps_entry.delete(0, tk.END)
+        self.fps_entry.insert(0, str(command_line_args.fps))
+
+        self.include_reverse_entry.set("yes" if command_line_args.include_reverse else "no")
+        self.save_reversed_entry.set("yes" if command_line_args.save_reversed else "no")
+
+        self.resampling_method_entry.set(command_line_args.resampling_method)
+        self.rotation_angle_entry.delete(0, tk.END)
+        self.rotation_angle_entry.insert(0, str(command_line_args.rotation_angle))
+
+        self.output_format_entry.set(command_line_args.output_format)
+
     def on_submit(self):
         try:
             # Collecting input values as strings
@@ -543,6 +565,7 @@ def main():
                 sys.exit(0)
 
             dialog = CustomDialog(root, file_path)
+            dialog.update_gui_defaults(args)
             root.wait_window(dialog)
 
             if dialog.result:
