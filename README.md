@@ -4,7 +4,7 @@ This Python script can transform ordinary images into extraordinary works of art
 
 ## Features
 - **Interactive GUI**: Easily select images and customize parameters through a user-friendly graphical interface.
-- **Command-Line Support**: For advanced users, the script offers full command-line functionality.
+- **Command-Line Support**: For advanced users, the script offers full command-line functionality. In the command-based arguments mode, if the user forgets to include the `--image_path` argument, the script automatically switches to the GUI mode and uses the provided command-line values to replace default GUI values.
 - **Customizable Parameters**: Adjust the shrink factor, maximum iterations, rotation angle, and more to create unique effects.
 - **Timelapse Video Creation**: Generate a video showing the transformation process, with options for reverse playback and FPS adjustment.
 - **Image Resampling Methods**: Choose from various resampling methods for different image quality and processing speeds.
