@@ -1,5 +1,14 @@
 # Droste Effect Image Creator
+
 Transform ordinary images into extraordinary works of art with the mesmerizing Droste Effect using this Python script. The script applies a recursive mirror effect to a selected image, producing a unique and captivating visual pattern. It systematically reduces the image size in each iteration and overlays these smaller versions onto the original, creating a concentric, mirrored design. Customize parameters like the shrink factor and maximum iterations for varied artistic expressions. The script even allows you to generate a timelapse video of the transformation process, complete with reverse playback for a seamless looping effect. Ideal for artists and programmers alike, this script is a simple yet powerful way to explore new dimensions in image processing.
+
+## Features
+- **Interactive GUI**: Easily select images and customize parameters through a user-friendly graphical interface.
+- **Command-Line Support**: For advanced users, the script offers full command-line functionality.
+- **Customizable Parameters**: Adjust the shrink factor, maximum iterations, rotation angle, and more to create unique effects.
+- **Timelapse Video Creation**: Generate a video showing the transformation process, with options for reverse playback and FPS adjustment.
+- **Image Resampling Methods**: Choose from various resampling methods for different image quality and processing speeds.
+- **Format Flexibility**: Save the final image and videos in multiple formats.
 
 ## Prerequisites
 Before using this script, please ensure you have the following installed:
@@ -8,7 +17,7 @@ Before using this script, please ensure you have the following installed:
 - MoviePy library (`pip install moviepy`)
 - Pillow library (`pip install Pillow`)
 
-## Usage
+## Installation
 **Clone the Repository:**
   ```bash
   git clone https://github.com/Silentoplayz/Droste-Effect-Image-Creator.git
@@ -20,12 +29,12 @@ Before using this script, please ensure you have the following installed:
   pip install -r requirements.txt
   ```
 
-# **Run the Script:**
+# **Running the Script:**
 ## GUI-Based Usage:
   ```python
   python droste_image_effect.py
   ```
-**Choose an image in the File Explorer pop-up, customize the default parameters to your liking, and then click Submit.**
+**Choose an image in the File Explorer pop-up, customize the default parameters to your liking, and then click on the Submit button.**
 
 ## Console-Based Usage:
   ```pythong
@@ -37,15 +46,15 @@ Before using this script, please ensure you have the following installed:
 
 # Parameters:
 
-| Parameter                         | Description                                                                                                       | Console Command Example (if applicable)                           | Required Argument? | Default Argument Value (if not used) |
+| Parameter                         | Description                                                                                                       | Console Command Example (if applicable)                           | Required Argument via Command-Line? | Default Argument Value (if not used) |
 |-----------------------------------|-------------------------------------------------------------------------------------------------------------------|-------------------------------------------------------------------|----------|--------------------------|
-| Image Path (string)               | Path to the input image.                                                                                         | `--image_path path/to/your/image.jpg`                           | Yes      | N/A                      |
+| Image Path (string)               | Path to the input image.                                                                                         | `--image_path path/to/your/image.jpg`                           | **Yes!**      | **N/A**                      |
 | Shrink Factor (float)             | Enter a shrink factor to determine how much each iteration of the image is reduced in size.         | `--shrink_factor 0.99`                                           | No       | 0.95                     |
 | Max Iterations (integer)          | Set the maximum number of iterations. Higher values result in more repetitions of the shrinking and pasting process. | `--max_iterations 200`                                           | No       | 100                      |
-| Save Timelapse (yes/no)           | Specify whether to save a timelapse video of the image processing. Respond `yes` to save a video showing each iteration. | `--save_timelapse yes`                                           | No       | True                     |
+| Save Timelapse (boolean)           | Specify whether to save a timelapse video of the image processing. Respond with `yes` or `true` to save a video showing each iteration. | `--save_timelapse yes`                                           | No       | True                     |
 | FPS for Timelapse (integer)       | Enter the Frames Per Second (FPS) for the timelapse video. Higher FPS results in a smoother video.                  | `--fps 30`                                                      | No       | 10                       |
-| Include Reverse (yes/no)          | Decide whether to include a reversed clip in the timelapse video, creating a seamless loop effect.                   | `--include_reverse no`                                           | No       | False                    |
-| Save Reversed Clip (yes/no)       | Choose whether to save the reversed clip separately. Respond `yes` to save a reversed clip showing the image sequence in reverse. | `--save_reversed yes`                                      | No       | True                     |
+| Include Reverse (boolean)          | Decide whether to include a reversed clip in the timelapse video, creating a seamless loop effect.                   | `--include_reverse no`                                           | No       | False                    |
+| Save Reversed Clip (boolean)       | Choose whether to save the reversed clip separately. Respond with `yes` or `true` to save a reversed clip showing the image sequence in reverse. | `--save_reversed yes`                                      | No       | True                     |
 | Image Resampling Method (string)  | Select the resampling method for image processing (e.g., `Nearest`, `Box`, `Bilinear`, `Hamming`, `Bicubic`, `Lanczos`). | `--resampling_method Bilinear`                                  | No      | Bilinear                 |
 | Rotation Angle (float)            | Enter the rotation angle per iteration to apply a cumulative rotation effect to each image iteration. Use a negative number to rotate the image clockwise. | `--rotation_angle 60`                                           | No      | 0.0                      |
 | Output Format (string)            | Choose the format for saving the final output image (e.g., `png`, `jpg`, `jpeg`, `bmp`, `webp`).                      | `--output_format bmp`                                           | No       | bmp                      |
@@ -53,6 +62,10 @@ Before using this script, please ensure you have the following installed:
 
 # Output
 The final processed image is saved as `output_{output_base_path}.{output_format}` in the script's directory. If you choose to save a timelapse video, it will be saved as `time_lapse_{output_base_path}.mp4`. If you opt to save the reversed clip separately, it will be named `reversed_clip_{output_base_path}.mp4`.
+
+**Note:**
+- You can't use `--output_format` with `--output_path` in conjunction when specifying a file path for `--output_path`. The image output format should be inferred from the file extension in `--output_path` instead.
+- The `output_path` can either be a directory or a file path with a file extension specified. If it is a file path, it must be a file type supported by `output_format`.
 
 # Output Examples:
 ![output_photo-1607222337192-910fb1a5c661_20240124_160451](https://github.com/Silentoplayz/Droste-Effect-Image-Creator/assets/50341825/78788a25-9779-4a27-bfdd-0aae6694a6b7)
