@@ -551,7 +551,6 @@ def main():
                 # Generate the unique suffix and output paths
                 timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
                 base_filename = os.path.splitext(os.path.basename(file_path))[0]
-                unique_suffix = f"{base_filename}_{timestamp}"
                 output_base_path = f"{base_filename}_{timestamp}"
                 output_image_path = f"{output_base_path}.{result['output_format']}"
                 timelapse_video_path = f"time_lapse_{output_base_path}.mp4" if result['save_timelapse'] else None
