@@ -58,14 +58,11 @@ Before using this script, please ensure you have the following installed:
 | Image Resampling Method (string)  | Select the resampling method for image processing (e.g., `Nearest`, `Box`, `Bilinear`, `Hamming`, `Bicubic`, `Lanczos`). | `--resampling_method Bilinear`                                  | No      | Bilinear                 |
 | Rotation Angle (float)            | Enter the rotation angle per iteration to apply a cumulative rotation effect to each image iteration. Use a negative number to rotate the image clockwise. | `--rotation_angle 60`                                           | No      | 0.0                      |
 | Output Format (string)            | Choose the format for saving the final output image (e.g., `png`, `jpg`, `jpeg`, `bmp`, `webp`).                      | `--output_format bmp`                                           | No       | bmp                      |
-| Output Path (string)              | Path for the output image.                                                                                      | `--output_path path/to/save/output.bmp`                          | No       | output_image.bmp         |
+| Output Path (string)              | Directory path for script's media output.                                                                                      | `--output_path path/to/save/output.bmp`                          | No       | output_image.bmp         |
 
 # Output
-The final processed image is saved as `output_{output_base_path}.{output_format}` in the script's directory. If you choose to save a timelapse video, it will be saved as `time_lapse_{output_base_path}.mp4`. If you opt to save the reversed clip separately, it will be named `reversed_clip_{output_base_path}.mp4`.
-
-**Note:**
-- You can't use `--output_format` with `--output_path` in conjunction when specifying a file path for `--output_path`. The image output format should be inferred from the file extension in `--output_path` instead.
-- The `output_path` can either be a directory or a file path with a file extension specified. If it is a file path, it must be a file type supported by `output_format`.
+- **The final processed image and timelapse videos are saved as `output_{output_base_path}.{output_format}` in the script's directory if ran in GUI mode, or as the `--output_path` directory if ran in console-based arguments mode.**
+- If you choose to save a timelapse video, it will be saved as `time_lapse_{output_base_path}.mp4`. If you opt to save the reversed clip separately, it will be named `reversed_clip_{output_base_path}.mp4`.**
 
 # Output Examples:
 ![output_photo-1607222337192-910fb1a5c661_20240124_160451](https://github.com/Silentoplayz/Droste-Effect-Image-Creator/assets/50341825/78788a25-9779-4a27-bfdd-0aae6694a6b7)
