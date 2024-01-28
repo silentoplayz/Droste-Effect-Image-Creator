@@ -18,7 +18,7 @@ def cleanup_temp_dir(temp_dir):
         print(f"Temporary files cleaned up: {temp_dir}")
     except Exception as e:
         print(f"Error cleaning up temporary files: {e}")
-        # traceback.print_exc()
+        traceback.print_exc()
 
 def process_image_for_droste_effect(image_path, temp_dir, shrink_factor, max_iterations, resampling_method, rotation_angle):
     frame_paths = []
@@ -103,7 +103,7 @@ def process_image_for_droste_effect(image_path, temp_dir, shrink_factor, max_ite
         return frame_paths, original_image
     except Exception as e:
         print(f"Error in image processing: {e}")
-        # traceback.print_exc()
+        traceback.print_exc()
         return [], None
 
 def create_videos(frame_paths, timelapse_video_path, reversed_clip_path, fps, include_reverse, save_reversed):
@@ -127,7 +127,7 @@ def create_videos(frame_paths, timelapse_video_path, reversed_clip_path, fps, in
         return True
     except Exception as e:
         print(f"Error in video creation: {e}")
-        # traceback.print_exc()
+        traceback.print_exc()
         return False
 
 def create_droste_image_effect(image_path, output_path, shrink_factor, max_iterations, save_timelapse, fps, include_reverse, timelapse_video_path, reversed_clip_path, save_reversed, resampling_method, rotation_angle, output_format):
@@ -169,12 +169,11 @@ def create_droste_image_effect(image_path, output_path, shrink_factor, max_itera
             print(f"Include Reverse: {include_reverse}")
             print(f"Save Reversed Clip: {save_reversed}")
         print(f"Image Resampling Method: {resampling_method}")
-        print(f"Output Image Format: {output_format}")
         print(f"Rotation Angle: {rotation_angle}")
 
     except Exception as e:
         print(f"An error occurred during image processing: {e}")
-        # traceback.print_exc()
+        traceback.print_exc()
     finally:
         # Cleanup the temporary directory
         if temp_dir:
@@ -197,7 +196,7 @@ def save_image_with_format(image, path, format):
         return True
     except Exception as e:
         print(f"An error occurred while saving the image: {e}")
-        # traceback.print_exc()
+        traceback.print_exc()
         return False
 
 def create_timelapse_video(frame_paths, output_filename, fps, include_reverse):
@@ -225,14 +224,22 @@ def create_timelapse_video(frame_paths, output_filename, fps, include_reverse):
         traceback.print_exc()
         return False
 
-def validate_parameters(image_path, shrink_factor_str, max_iterations_str, save_timelapse_str, fps_str, include_reverse_str, save_reversed_str, resampling_method, rotation_angle_str, output_format):
+def validate_parameters(image_path, shrink_factor_str, max_iterations_str, save_timelapse_str, fps_str, include_reverse_str, save_reversed_str, resampling_method, rotation_angle_str, output_format, output_path, is_output_format_provided):
     # Check for None values in required parameters
     if any(param is None for param in [shrink_factor_str, max_iterations_str, resampling_method, rotation_angle_str, output_format]):
-        raise ValueError("All arguments (shrink_factor, max_iterations, resampling_method, rotation_angle, output_format) are required  for command-line arguments mode.")
+        raise ValueError("All arguments (shrink_factor, max_iterations, resampling_method, rotation_angle, output_format) are required for command-line arguments mode.")
+
+    # Supported image file extensions
+    valid_image_extensions = ['.png', '.jpg', '.jpeg', '.bmp', '.webp']
 
     # Image Path Validation
     if not os.path.isfile(image_path):
         raise ValueError(f"The specified image path does not exist or is not a file: {image_path}")
+
+    # Check if the image file extension is valid
+    _, image_ext = os.path.splitext(image_path)
+    if image_ext.lower() not in valid_image_extensions:
+        raise ValueError(f"The file extension of the image is not supported. Supported extensions are: {', '.join(valid_image_extensions)}.")
 
     # Shrink Factor Validation
     if shrink_factor_str is None or shrink_factor_str.strip() == "":
@@ -243,8 +250,8 @@ def validate_parameters(image_path, shrink_factor_str, max_iterations_str, save_
     except ValueError:
         raise ValueError("Shrink factor must be a valid floating-point number.")
 
-    if not (0 < shrink_factor <= 1):
-        raise ValueError("Shrink factor must be between 0.01 and 1.00")
+    if not (0 < shrink_factor <= 0.99):
+        raise ValueError("Shrink factor must be between 0.01 and 0.99")
 
     # Max Iterations Validation
     if max_iterations_str is None or max_iterations_str.strip() == "":
@@ -314,6 +321,22 @@ def validate_parameters(image_path, shrink_factor_str, max_iterations_str, save_
     if output_format.lower() not in valid_formats:
         raise ValueError(f"Invalid output format. Choose from {', '.join(valid_formats)}.")
 
+    # Supported file extensions
+    valid_extensions = ['png', 'jpg', 'jpeg', 'bmp', 'webp']
+
+    # Output Path and Format Validation
+    if output_path:
+        _, ext = os.path.splitext(output_path)
+        ext = ext.lstrip('.').lower()
+        if ext:
+            if is_output_format_provided and output_format.lower() != ext:
+                raise ValueError("Cannot use --output_format with --output_path when specifying a file path. The format should be inferred from the file extension.")
+            if ext not in valid_extensions:
+                raise ValueError(f"The file extension in the output path is not supported. Supported extensions are: {', '.join(valid_extensions)}.")
+            output_format = ext
+        elif output_format.lower() not in valid_extensions:
+            raise ValueError(f"Invalid output format. Choose from {', '.join(valid_extensions)}.")
+
     return {
         'shrink_factor': shrink_factor,
         'max_iterations': max_iterations,
@@ -323,7 +346,7 @@ def validate_parameters(image_path, shrink_factor_str, max_iterations_str, save_
         'save_reversed': save_reversed,
         'resampling_method': resampling_method.lower(),
         'rotation_angle': rotation_angle,
-        'output_format': output_format.lower()
+        'output_format': output_format
     }
 
 class CustomDialog(tk.Toplevel):
@@ -412,12 +435,17 @@ class CustomDialog(tk.Toplevel):
             rotation_angle_str = self.rotation_angle_entry.get().lower()
             output_format = self.output_format_entry.get().lower()
 
+            # Default output path (can be modified as needed)
+            output_path = ""  # Assuming no specific output path is provided in the GUI mode
+            is_output_format_provided = False  # In GUI mode, output format is always provided via the interface
+
             # Validate and process the parameters
             validated_params = validate_parameters(
                 self.file_path,
                 shrink_factor_str, max_iterations_str, save_timelapse_str, fps_str,
                 include_reverse_str, save_reversed_str, resampling_method,
-                rotation_angle_str, output_format
+                rotation_angle_str, output_format, output_path,
+                is_output_format_provided
             )
 
             # If validation is successful, set the result
@@ -439,8 +467,12 @@ def main():
     parser.add_argument("--resampling_method", help="Image Resampling Method", default='Bilinear')
     parser.add_argument("--rotation_angle", type=float, help="Rotation angle per iteration", default=0.0)
     parser.add_argument("--output_format", help="Format for the output image", choices=['png', 'jpg', 'jpeg', 'bmp', 'webp'], default='bmp')
+    parser.add_argument("--output_path", help="Path for the output files", default="")
 
     args = parser.parse_args()
+
+    # Determine if output_format was explicitly provided by the user
+    is_output_format_provided = '--output_format' in sys.argv
 
     if args.image_path:
         # Command-line mode
@@ -450,7 +482,8 @@ def main():
             args.image_path,
             str(args.shrink_factor), str(args.max_iterations), str(args.save_timelapse),
             str(args.fps), str(args.include_reverse), str(args.save_reversed),
-            args.resampling_method, str(args.rotation_angle), args.output_format
+            args.resampling_method, str(args.rotation_angle), args.output_format, args.output_path,
+            is_output_format_provided
             )
 
             # Extract validated parameters
@@ -464,13 +497,24 @@ def main():
             rotation_angle = validated_params['rotation_angle']
             output_format = validated_params['output_format']
 
-            # Generate the unique suffix and output paths
-            timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
-            base_filename = os.path.splitext(os.path.basename(args.image_path))[0]
-            unique_suffix = f"{base_filename}_{timestamp}"
-            output_image_path = f"output_{unique_suffix}.{output_format}"
-            timelapse_video_path = f"time_lapse_{unique_suffix}.mp4" if save_timelapse else None
-            reversed_clip_path = f"reversed_clip_{unique_suffix}.mp4" if save_reversed else None
+            # Determine if the output_path is a directory or a file path
+            if args.output_path:
+                if os.path.isdir(args.output_path):
+                    base_filename = os.path.splitext(os.path.basename(args.image_path))[0]
+                    output_base_path = os.path.join(args.output_path, base_filename)
+                    output_format = args.output_format
+                else:
+                    output_base_path, output_ext = os.path.splitext(args.output_path)
+                    output_format = output_ext.lstrip('.').lower() if output_ext else args.output_format
+            else:
+                timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+                base_filename = os.path.splitext(os.path.basename(args.image_path))[0]
+                output_base_path = os.path.join(os.getcwd(), f"{base_filename}_{timestamp}")
+                output_format = args.output_format
+
+            output_image_path = f"{output_base_path}.{output_format}"
+            timelapse_video_path = f"time_lapse_{output_base_path}.mp4" if args.save_timelapse else None
+            reversed_clip_path = f"reversed_clip_{output_base_path}.mp4" if args.save_reversed else None
 
             # Call the image processing function with the updated paths
             create_droste_image_effect(
@@ -508,9 +552,10 @@ def main():
                 timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
                 base_filename = os.path.splitext(os.path.basename(file_path))[0]
                 unique_suffix = f"{base_filename}_{timestamp}"
-                output_image_path = f"output_{unique_suffix}.{result['output_format']}"
-                timelapse_video_path = f"time_lapse_{unique_suffix}.mp4" if result['save_timelapse'] else None
-                reversed_clip_path = f"reversed_clip_{unique_suffix}.mp4" if result['save_reversed'] else None
+                output_base_path = f"{base_filename}_{timestamp}"
+                output_image_path = f"{output_base_path}.{result['output_format']}"
+                timelapse_video_path = f"time_lapse_{output_base_path}.mp4" if result['save_timelapse'] else None
+                reversed_clip_path = f"reversed_clip_{output_base_path}.mp4" if result['save_reversed'] else None
 
                 create_droste_image_effect(
                     file_path, output_image_path, result['shrink_factor'], result['max_iterations'],
