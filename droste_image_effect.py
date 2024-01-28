@@ -131,7 +131,7 @@ def create_videos(frame_paths, timelapse_video_path, reversed_clip_path, fps, in
         # traceback.print_exc()
         return False
 
-def create_droste_image_effect(image_path, output_path, shrink_factor, max_iterations, save_timelapse, fps, include_reverse, timelapse_video_path, reversed_clip_path, save_reversed, unique_suffix, resampling_method, rotation_angle, output_format):
+def create_droste_image_effect(image_path, output_path, shrink_factor, max_iterations, save_timelapse, fps, include_reverse, timelapse_video_path, reversed_clip_path, save_reversed, resampling_method, rotation_angle, output_format):
     start_time = time.time()
 
     temp_dir = None
@@ -477,7 +477,7 @@ def main():
             create_droste_image_effect(
                 args.image_path, output_image_path, shrink_factor, max_iterations,
                 save_timelapse, fps, include_reverse, timelapse_video_path,
-                reversed_clip_path, save_reversed, unique_suffix,
+                reversed_clip_path, save_reversed,
                 resampling_method, rotation_angle, output_format
             )
         except ValueError as e:
@@ -516,7 +516,7 @@ def main():
                 create_droste_image_effect(
                     file_path, output_image_path, result['shrink_factor'], result['max_iterations'],
                     result['save_timelapse'], result['fps'], result['include_reverse'], timelapse_video_path,
-                    reversed_clip_path, result['save_reversed'], unique_suffix,
+                    reversed_clip_path, result['save_reversed'],
                     result['resampling_method'], result['rotation_angle'], result['output_format']
                 )
                 print(f"Image saved as {output_image_path}")
