@@ -325,18 +325,10 @@ def validate_parameters(image_path, shrink_factor_str, max_iterations_str, save_
     # Supported file extensions
     valid_extensions = ['png', 'jpg', 'jpeg', 'bmp', 'webp']
 
-    # Output Path and Format Validation
+    # Output Path Validation
     if output_path:
-        _, ext = os.path.splitext(output_path)
-        ext = ext.lstrip('.').lower()
-        if ext:
-            if is_output_format_provided and output_format.lower() != ext:
-                raise ValueError("Cannot use --output_format with --output_path when specifying a file path. The format should be inferred from the file extension.")
-            if ext not in valid_extensions:
-                raise ValueError(f"The file extension in the output path is not supported. Supported extensions are: {', '.join(valid_extensions)}.")
-            output_format = ext
-        elif output_format.lower() not in valid_extensions:
-            raise ValueError(f"Invalid output format. Choose from {', '.join(valid_extensions)}.")
+        if not os.path.isdir(output_path):
+            raise ValueError(f"The specified output path is not a directory: {output_path}")
 
     return {
         'shrink_factor': shrink_factor,
@@ -519,31 +511,26 @@ def main():
             rotation_angle = validated_params['rotation_angle']
             output_format = validated_params['output_format']
 
-            # Determine if the output_path is a directory or a file path
+            # Handle the output directory
             if args.output_path:
-                if os.path.isdir(args.output_path):
-                    base_filename = os.path.splitext(os.path.basename(args.image_path))[0]
-                    output_base_path = os.path.join(args.output_path, base_filename)
-                    output_format = args.output_format
-                else:
-                    output_base_path, output_ext = os.path.splitext(args.output_path)
-                    output_format = output_ext.lstrip('.').lower() if output_ext else args.output_format
+                if not os.path.isdir(args.output_path):
+                    raise ValueError(f"The specified output path is not a directory: {args.output_path}")
+                output_base_path = os.path.join(args.output_path, os.path.splitext(os.path.basename(args.image_path))[0])
             else:
                 timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
                 base_filename = os.path.splitext(os.path.basename(args.image_path))[0]
                 output_base_path = os.path.join(os.getcwd(), f"{base_filename}_{timestamp}")
-                output_format = args.output_format
 
-            output_image_path = f"{output_base_path}.{output_format}"
-            timelapse_video_path = f"time_lapse_{output_base_path}.mp4" if args.save_timelapse else None
-            reversed_clip_path = f"reversed_clip_{output_base_path}.mp4" if args.save_reversed else None
+            output_image_path = f"{output_base_path}.{args.output_format}"
+            timelapse_video_path = f"{output_base_path}_timelapse.mp4" if args.save_timelapse else None
+            reversed_clip_path = f"{output_base_path}_reversed.mp4" if args.save_reversed else None
 
             # Call the image processing function with the updated paths
             create_droste_image_effect(
-                args.image_path, output_image_path, shrink_factor, max_iterations,
-                save_timelapse, fps, include_reverse, timelapse_video_path,
-                reversed_clip_path, save_reversed,
-                resampling_method, rotation_angle, output_format
+                args.image_path, output_image_path, validated_params['shrink_factor'], validated_params['max_iterations'],
+                validated_params['save_timelapse'], validated_params['fps'], validated_params['include_reverse'], timelapse_video_path,
+                reversed_clip_path, validated_params['save_reversed'],
+                validated_params['resampling_method'], validated_params['rotation_angle'], validated_params['output_format']
             )
         except ValueError as e:
             print(e)
