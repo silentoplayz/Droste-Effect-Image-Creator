@@ -52,7 +52,7 @@ Before using this script, please ensure you have the following installed:
 | Output Path (string)              | Path for the output image.                                                                                      | `--output_path path/to/save/output.bmp`                          | No       | output_image.bmp         |
 
 # Output
-The final processed image is saved as `output_{unique_suffix}.{output_format}` in the script's directory. If you choose to save a timelapse video, it will be saved as `time_lapse_{unique_suffix}.mp4`. If you opt to save the reversed clip separately, it will be named `reversed_clip_{unique_suffix}.mp4`.
+The final processed image is saved as `output_{output_base_path}.{output_format}` in the script's directory. If you choose to save a timelapse video, it will be saved as `time_lapse_{output_base_path}.mp4`. If you opt to save the reversed clip separately, it will be named `reversed_clip_{output_base_path}.mp4`.
 
 # Output Examples:
 ![output_photo-1607222337192-910fb1a5c661_20240124_160451](https://github.com/Silentoplayz/Droste-Effect-Image-Creator/assets/50341825/78788a25-9779-4a27-bfdd-0aae6694a6b7)
