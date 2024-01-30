@@ -326,9 +326,8 @@ def validate_parameters(image_path, shrink_factor_str, max_iterations_str, save_
     valid_extensions = ['png', 'jpg', 'jpeg', 'bmp', 'webp']
 
     # Output Path Validation
-    if output_path:
-        if not os.path.isdir(output_path):
-            raise ValueError(f"The specified output path is not a directory: {output_path}")
+    if output_path and not os.path.isdir(output_path):
+        raise ValueError(f"The specified output path is not a directory: {output_path}")
 
     return {
         'shrink_factor': shrink_factor,
@@ -409,11 +408,26 @@ class CustomDialog(tk.Toplevel):
         self.output_format_entry.set("png")  # Default value
         self.output_format_entry.pack()
 
+        # Output Path
+        tk.Label(self, text="Output Path: (Leave Empty for Script's Directory)").pack()
+        self.output_path_entry = tk.Entry(self)
+        self.output_path_entry.pack()
+
+        # Browse Button for Output Path
+        self.browse_button = tk.Button(self, text="Browse", command=self.browse_output_path)
+        self.browse_button.pack()
+
         # Submit Button
         self.submit_button = tk.Button(self, text="Submit", command=self.on_submit)
         self.submit_button.pack()
 
         self.result = None
+
+    def browse_output_path(self):
+        directory = filedialog.askdirectory()
+        if directory:
+            self.output_path_entry.delete(0, tk.END)
+            self.output_path_entry.insert(0, directory)
 
     # Update GUI defaults based on command-line arguments
     def update_gui_defaults(self, command_line_args):
@@ -449,10 +463,9 @@ class CustomDialog(tk.Toplevel):
             rotation_angle_str = self.rotation_angle_entry.get().lower()
             output_format = self.output_format_entry.get().lower()
 
-            # Default output path (can be modified as needed)
-            output_path = ""  # Assuming no specific output path is provided in the GUI mode
+            output_path = self.output_path_entry.get().strip()  # Assuming no specific output path is provided in the GUI mode
             is_output_format_provided = False  # In GUI mode, output format is always provided via the interface
-
+            
             # Validate and process the parameters
             validated_params = validate_parameters(
                 self.file_path,
@@ -464,6 +477,7 @@ class CustomDialog(tk.Toplevel):
 
             # If validation is successful, set the result
             self.result = validated_params
+            self.result['output_path'] = output_path
             self.destroy()
         except ValueError as e:
             messagebox.showerror("Input Error", str(e))
@@ -558,13 +572,20 @@ def main():
             if dialog.result:
                 # Unpack the result and call the processing function
                 result = dialog.result
-                # Generate the unique suffix and output paths
+
+                # Use the provided output path if available, otherwise default to the current working directory
+                output_base_path = result.get('output_path', os.getcwd())
+                if output_base_path and not os.path.exists(output_base_path):
+                    os.makedirs(output_base_path)
+
+                # Generate filenames for the output files
                 timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
                 base_filename = os.path.splitext(os.path.basename(file_path))[0]
-                output_base_path = f"{base_filename}_{timestamp}"
-                output_image_path = f"{output_base_path}.{result['output_format']}"
-                timelapse_video_path = f"time_lapse_{output_base_path}.mp4" if result['save_timelapse'] else None
-                reversed_clip_path = f"reversed_clip_{output_base_path}.mp4" if result['save_reversed'] else None
+                final_output_base = os.path.join(output_base_path, f"{base_filename}_{timestamp}")
+
+                output_image_path = f"{final_output_base}.{result['output_format']}"
+                timelapse_video_path = f"{final_output_base}_timelapse.mp4" if result['save_timelapse'] else None
+                reversed_clip_path = f"{final_output_base}_reversed.mp4" if result['save_reversed'] else None
 
                 create_droste_image_effect(
                     file_path, output_image_path, result['shrink_factor'], result['max_iterations'],
