@@ -10,7 +10,7 @@ import tkinter.ttk as ttk
 import traceback
 from tkinter import filedialog, messagebox
 from PIL import Image
-from moviepy.editor import ImageSequenceClip, concatenate_videoclips
+from moviepy.editor import ImageSequenceClip, concatenate_videoclips, vfx
 
 def cleanup_temp_dir(temp_dir):
     try:
@@ -25,22 +25,11 @@ def process_image_for_droste_effect(image_path, temp_dir, shrink_factor, max_ite
     frame_format = 'bmp'
     try:
         # Load the original image
-        original_image = Image.open(image_path)
-
-        # Convert to 'RGBA' for transparency support
-        if original_image.mode != 'RGBA':
-            original_image = original_image.convert('RGBA')
+        original_image = Image.open(image_path).convert('RGBA')
 
         current_image = original_image.copy()
         current_size = original_image.size
         total_rotation = 0
-
-        # Save the original image as the first frame
-        frame_path = os.path.join(temp_dir, f"frame_0.{frame_format}")
-        if not save_image_with_format(original_image, frame_path, frame_format):
-            print("Failed to save the initial frame.")
-            return [], None
-        frame_paths.append(frame_path)
 
         # Mapping string input to PIL resampling methods
         resampling_methods = {
@@ -53,22 +42,16 @@ def process_image_for_droste_effect(image_path, temp_dir, shrink_factor, max_ite
         }
         pil_resampling_method = resampling_methods.get(resampling_method.lower(), Image.Resampling.BILINEAR)
 
-        for iteration in range(1, max_iterations):
+        for iteration in range(max_iterations):
             print(f"Processing iteration {iteration}...")
 
-            # Calculate the new size
-            new_width = int(current_size[0] * shrink_factor)
-            new_height = int(current_size[1] * shrink_factor)
-
             # Break the loop if the new size is too small
-            if new_width <= 0 or new_height <= 0:
+            if current_size[0] <= 1 or current_size[1] <= 1:
                 print("Terminating process: Image has become too small to process any further.")
                 break
 
-            # Resize the image with user-specified resampling method
-            resized_image = current_image.resize((new_width, new_height), pil_resampling_method)
-
-            # Update total rotation
+            # Resize and rotate the image
+            resized_image = current_image.resize((int(current_size[0] * shrink_factor), int(current_size[1] * shrink_factor)), pil_resampling_method)
             total_rotation = (total_rotation + rotation_angle) % 360
             # Rotate the image by the accumulated angle with a transparent background
             rotated_image = resized_image.rotate(total_rotation, expand=True, fillcolor=(0,0,0,0))
@@ -88,9 +71,9 @@ def process_image_for_droste_effect(image_path, temp_dir, shrink_factor, max_ite
             original_image.paste(transparent_image, (0, 0), transparent_image)
 
             # Update the current size for the next iteration
-            current_size = (new_width, new_height)
+            current_size = (int(current_size[0] * shrink_factor), int(current_size[1] * shrink_factor))
 
-            # Save the frame with user-specified frame format
+            # Save the frame
             frame_path = os.path.join(temp_dir, f"frame_{iteration}.{frame_format}")
             if not save_image_with_format(original_image, frame_path, frame_format):
                 print(f"Failed to save frame {iteration}.")
@@ -197,15 +180,12 @@ def create_timelapse_video(frame_paths, output_filename, fps, include_reverse):
     try:
         # Create a clip from the frames
         clip = ImageSequenceClip(frame_paths, fps=fps)
-        clip.duration = len(frame_paths) / float(fps)
 
         if include_reverse:
-            # Manually create a reversed clip
-            reversed_frame_paths = frame_paths[::-1]
-            reversed_clip = ImageSequenceClip(reversed_frame_paths, fps=fps)
-            reversed_clip.duration = clip.duration
+            # Create a reversed clip using the same frames in reverse order
+            reversed_clip = clip.fx(vfx.time_mirror)
 
-            # Concatenate the original clip with the manually created reversed clip
+            # Concatenate the original clip with the reversed clip
             final_clip = concatenate_videoclips([clip, reversed_clip])
         else:
             final_clip = clip
