@@ -181,22 +181,27 @@ def create_timelapse_video(frame_paths, output_filename, fps, include_reverse):
         # Create a clip from the frames
         clip = ImageSequenceClip(frame_paths, fps=fps)
 
+        # If reverse video is included, create and concatenate it
         if include_reverse:
-            # Create a reversed clip using the same frames in reverse order
             reversed_clip = clip.fx(vfx.time_mirror)
-
-            # Concatenate the original clip with the reversed clip
             final_clip = concatenate_videoclips([clip, reversed_clip])
         else:
             final_clip = clip
 
         # Write the final clip to a file
-        final_clip.write_videofile(output_filename, codec='libx264')
-        return True
+        final_clip.write_videofile(output_filename, codec='libx264', threads=4)
     except Exception as e:
         print(f"An error occurred during video creation: {e}")
         traceback.print_exc()
         return False
+    finally:
+        # Close the clip to release resources
+        clip.close()
+        if include_reverse:
+            reversed_clip.close()
+        final_clip.close()
+
+    return True
 
 def validate_parameters(image_path, shrink_factor_str, max_iterations_str, save_timelapse_str, fps_str, include_reverse_str, save_reversed_str, resampling_method, rotation_angle_str, output_format, output_path, is_output_format_provided):
     # Helper function to parse boolean strings
