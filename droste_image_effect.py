@@ -231,20 +231,14 @@ def validate_parameters(image_path, shrink_factor_str, max_iterations_str, save_
         raise ValueError(f"The file extension of the image is not supported. Supported extensions are: {', '.join(valid_image_extensions)}.")
 
     # Shrink Factor Validation
-    try:
-        shrink_factor = float(shrink_factor_str)
-        if not (0 < shrink_factor <= 0.99):
-            raise ValueError("Shrink factor must be between 0.01 and 0.99")
-    except ValueError:
-        raise ValueError("Shrink factor must be a valid floating-point number.")
+    shrink_factor = parse_float(shrink_factor_str, "Shrink factor")
+    if not (0 < shrink_factor <= 0.99):
+        raise ValueError("Shrink factor must be between 0.01 and 0.99")
 
     # Max Iterations Validation
-    try:
-        max_iterations = int(max_iterations_str)
-        if max_iterations <= 0:
-            raise ValueError("Max iterations must be a positive integer")
-    except ValueError:
-        raise ValueError("Max iterations must be a valid integer.")
+    max_iterations = parse_int(max_iterations_str, "Max iterations")
+    if max_iterations <= 0:
+        raise ValueError("Max iterations must be a positive integer")
 
     # Timelapse, FPS, Include Reverse, and Save Reversed Validation
     save_timelapse = parse_bool(save_timelapse_str)
@@ -252,12 +246,9 @@ def validate_parameters(image_path, shrink_factor_str, max_iterations_str, save_
     save_reversed = parse_bool(save_reversed_str)
 
     if save_timelapse:
-        try:
-            fps = int(fps_str)
-            if fps <= 0:
-                raise ValueError("FPS must be a positive integer.")
-        except ValueError:
-            raise ValueError("FPS must be a valid integer.")
+        fps = parse_int(fps_str, "FPS")
+        if fps <= 0:
+            raise ValueError("FPS must be a positive integer.")
     else:
         fps = 10
 
@@ -270,12 +261,9 @@ def validate_parameters(image_path, shrink_factor_str, max_iterations_str, save_
         raise ValueError(f"Invalid resampling method. Choose from {', '.join(valid_resampling_methods)}.")
 
     # Rotation Angle Validation
-    try:
-        rotation_angle = float(rotation_angle_str)
-        if not (-360 <= rotation_angle <= 360):
-            raise ValueError("Rotation angle must be between -360 and 360 degrees")
-    except ValueError:
-        raise ValueError("Rotation angle must be a valid floating-point number.")
+    rotation_angle = parse_float(rotation_angle_str, "Rotation angle")
+    if not (-360 <= rotation_angle <= 360):
+        raise ValueError("Rotation angle must be between -360 and 360 degrees")
 
     # Output Format Validation
     valid_formats = ['png', 'jpg', 'jpeg', 'bmp', 'webp']
@@ -298,87 +286,58 @@ def validate_parameters(image_path, shrink_factor_str, max_iterations_str, save_
         'output_format': output_format
     }
 
+# Helper functions for parsing float and int values
+def parse_float(value_str, param_name):
+    try:
+        return float(value_str)
+    except ValueError:
+        raise ValueError(f"{param_name} must be a valid floating-point number.")
+
+def parse_int(value_str, param_name):
+    try:
+        return int(value_str)
+    except ValueError:
+        raise ValueError(f"{param_name} must be a valid integer.")
+
 class CustomDialog(tk.Toplevel):
     def __init__(self, parent, file_path):
         super().__init__(parent)
         self.file_path = file_path
         self.title("Droste Effect Parameters")
+        self.create_widgets()
+        self.result = None
 
-        # Shrink Factor
-        tk.Label(self, text="Shrink Factor (0.01 to 1.00):").pack()
-        self.shrink_factor_entry = tk.Entry(self)
-        self.shrink_factor_entry.insert(0, "0.95")
-        self.shrink_factor_entry.pack()
+    def create_widgets(self):
+        # Helper function to create labeled entry or combobox
+        def create_labeled_input(container, label, input_type, options=None, default=None):
+            tk.Label(container, text=label).pack()
+            if input_type == 'entry':
+                widget = tk.Entry(container)
+                if default is not None:
+                    widget.insert(0, default)
+            elif input_type == 'combobox':
+                var = tk.StringVar()
+                widget = ttk.Combobox(container, textvariable=var, values=options, state="readonly")
+                if default is not None:
+                    widget.set(default)
+            widget.pack()
+            return widget
 
-        # Max Iterations
-        tk.Label(self, text="Max Iterations:").pack()
-        self.max_iterations_entry = tk.Entry(self)
-        self.max_iterations_entry.insert(0, "100")
-        self.max_iterations_entry.pack()
+        self.shrink_factor_entry = create_labeled_input(self, "Shrink Factor (0.01 to 1.00):", 'entry', default="0.95")
+        self.max_iterations_entry = create_labeled_input(self, "Max Iterations:", 'entry', default="100")
+        self.save_timelapse_entry = create_labeled_input(self, "Save Timelapse:", 'combobox', options=["yes", "no"], default="yes")
+        self.fps_entry = create_labeled_input(self, "FPS for Timelapse:", 'entry', default="20")
+        self.include_reverse_entry = create_labeled_input(self, "Include Reverse in Video:", 'combobox', options=["yes", "no"], default="no")
+        self.save_reversed_entry = create_labeled_input(self, "Save Reversed Clip:", 'combobox', options=["yes", "no"], default="yes")
+        self.resampling_method_entry = create_labeled_input(self, "Resampling Method:", 'combobox', options=["Nearest", "Box", "Bilinear", "Hamming", "Bicubic", "Lanczos"], default="Bilinear")
+        self.rotation_angle_entry = create_labeled_input(self, "Rotation Angle:", 'entry', default="5")
+        self.output_format_entry = create_labeled_input(self, "Output Format:", 'combobox', options=["png", "jpg", "jpeg", "bmp", "webp"], default="png")
+        self.output_path_entry = create_labeled_input(self, "Output Path: (Leave Empty for Script's Directory)", 'entry')
 
-        # Save Timelapse with combobox
-        tk.Label(self, text="Save Timelapse:").pack()
-        self.save_timelapse_var = tk.StringVar()
-        self.save_timelapse_entry = ttk.Combobox(self, textvariable=self.save_timelapse_var, values=["yes", "no"], state="readonly")
-        self.save_timelapse_entry.set("yes")
-        self.save_timelapse_entry.pack()
-
-        # FPS
-        tk.Label(self, text="FPS for Timelapse:").pack()
-        self.fps_entry = tk.Entry(self)
-        self.fps_entry.insert(0, "20")
-        self.fps_entry.pack()
-        
-        # Include Reverse with combobox
-        tk.Label(self, text="Include Reverse in Video:").pack()
-        self.include_reverse_var = tk.StringVar()
-        self.include_reverse_entry = ttk.Combobox(self, textvariable=self.include_reverse_var, values=["yes", "no"], state="readonly")
-        self.include_reverse_entry.set("no")
-        self.include_reverse_entry.pack()
-
-        # Save Reversed Clip with combobox
-        tk.Label(self, text="Save Reversed Clip:").pack()
-        self.save_reversed_var = tk.StringVar()
-        self.save_reversed_entry = ttk.Combobox(self, textvariable=self.save_reversed_var, values=["yes", "no"], state="readonly")
-        self.save_reversed_entry.set("yes")
-        self.save_reversed_entry.pack()
-
-        # Resampling Method with combobox
-        tk.Label(self, text="Resampling Method:").pack()
-        resampling_methods = ["Nearest", "Box", "Bilinear", "Hamming", "Bicubic", "Lanczos"]
-        self.resampling_method_var = tk.StringVar()
-        self.resampling_method_entry = ttk.Combobox(self, textvariable=self.resampling_method_var, values=resampling_methods, state="readonly")
-        self.resampling_method_entry.set("Bilinear")
-        self.resampling_method_entry.pack()
-
-        # Rotation Angle
-        tk.Label(self, text="Rotation Angle:").pack()
-        self.rotation_angle_entry = tk.Entry(self)
-        self.rotation_angle_entry.insert(0, "5")
-        self.rotation_angle_entry.pack()
-
-        # Output Format with combobox
-        tk.Label(self, text="Output Format:").pack()
-        formats = ["png", "jpg", "jpeg", "bmp", "webp"]
-        self.output_format_var = tk.StringVar()
-        self.output_format_entry = ttk.Combobox(self, textvariable=self.output_format_var, values=formats, state="readonly")
-        self.output_format_entry.set("png")
-        self.output_format_entry.pack()
-
-        # Output Path
-        tk.Label(self, text="Output Path: (Leave Empty for Script's Directory)").pack()
-        self.output_path_entry = tk.Entry(self)
-        self.output_path_entry.pack()
-
-        # Browse Button for Output Path
         self.browse_button = tk.Button(self, text="Browse", command=self.browse_output_path)
         self.browse_button.pack()
-
-        # Submit Button
         self.submit_button = tk.Button(self, text="Submit", command=self.on_submit)
         self.submit_button.pack()
-
-        self.result = None
 
     def browse_output_path(self):
         directory = filedialog.askdirectory()
