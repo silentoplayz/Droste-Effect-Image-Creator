@@ -477,10 +477,10 @@ def main():
 
             # Call the image processing function with the updated paths
             create_droste_image_effect(
-                args.image_path, output_image_path, validated_params['shrink_factor'], validated_params['max_iterations'],
-                validated_params['save_timelapse'], validated_params['fps'], validated_params['include_reverse'], timelapse_video_path,
-                reversed_clip_path, validated_params['save_reversed'],
-                validated_params['resampling_method'], validated_params['rotation_angle'], validated_params['output_format']
+                args.image_path, output_image_path, shrink_factor, max_iterations,
+                save_timelapse, fps, include_reverse, timelapse_video_path,
+                reversed_clip_path, save_reversed,
+                resampling_method, rotation_angle, output_format
             )
         except ValueError as e:
             print(e)
