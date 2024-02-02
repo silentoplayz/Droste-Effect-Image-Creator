@@ -308,36 +308,53 @@ class CustomDialog(tk.Toplevel):
         self.result = None
 
     def create_widgets(self):
+        # Grid layout for better alignment and spacing
+        self.grid_columnconfigure(1, weight=1)
+        row = 0
+
         # Helper function to create labeled entry or combobox
-        def create_labeled_input(container, label, input_type, options=None, default=None):
-            tk.Label(container, text=label).pack()
+        def create_labeled_input(label, input_type, options=None, default=None):
+            nonlocal row
+            tk.Label(self, text=label).grid(row=row, column=0, sticky='w', padx=5, pady=5)
             if input_type == 'entry':
-                widget = tk.Entry(container)
+                widget = tk.Entry(self)
                 if default is not None:
                     widget.insert(0, default)
             elif input_type == 'combobox':
                 var = tk.StringVar()
-                widget = ttk.Combobox(container, textvariable=var, values=options, state="readonly")
+                widget = ttk.Combobox(self, textvariable=var, values=options, state="readonly")
                 if default is not None:
                     widget.set(default)
-            widget.pack()
+            widget.grid(row=row, column=1, sticky='ew', padx=5, pady=5)
+            row += 1
             return widget
 
-        self.shrink_factor_entry = create_labeled_input(self, "Shrink Factor (0.01 to 1.00):", 'entry', default="0.95")
-        self.max_iterations_entry = create_labeled_input(self, "Max Iterations:", 'entry', default="100")
-        self.save_timelapse_entry = create_labeled_input(self, "Save Timelapse:", 'combobox', options=["yes", "no"], default="yes")
-        self.fps_entry = create_labeled_input(self, "FPS for Timelapse:", 'entry', default="20")
-        self.include_reverse_entry = create_labeled_input(self, "Include Reverse in Video:", 'combobox', options=["yes", "no"], default="no")
-        self.save_reversed_entry = create_labeled_input(self, "Save Reversed Clip:", 'combobox', options=["yes", "no"], default="yes")
-        self.resampling_method_entry = create_labeled_input(self, "Resampling Method:", 'combobox', options=["Nearest", "Box", "Bilinear", "Hamming", "Bicubic", "Lanczos"], default="Bilinear")
-        self.rotation_angle_entry = create_labeled_input(self, "Rotation Angle:", 'entry', default="5")
-        self.output_format_entry = create_labeled_input(self, "Output Format:", 'combobox', options=["png", "jpg", "jpeg", "bmp", "webp"], default="png")
-        self.output_path_entry = create_labeled_input(self, "Output Path: (Leave Empty for Script's Directory)", 'entry')
+        self.shrink_factor_entry = create_labeled_input("Shrink Factor (0.01 to 1.00):", 'entry', default="0.95")
+        self.max_iterations_entry = create_labeled_input("Max Iterations:", 'entry', default="100")
+        self.save_timelapse_entry = create_labeled_input("Save Timelapse:", 'combobox', options=["yes", "no"], default="yes")
+        self.fps_entry = create_labeled_input("FPS for Timelapse:", 'entry', default="20")
+        self.include_reverse_entry = create_labeled_input("Include Reverse in Video:", 'combobox', options=["yes", "no"], default="no")
+        self.save_reversed_entry = create_labeled_input("Save Reversed Clip:", 'combobox', options=["yes", "no"], default="yes")
+        self.resampling_method_entry = create_labeled_input("Resampling Method:", 'combobox', options=["Nearest", "Box", "Bilinear", "Hamming", "Bicubic", "Lanczos"], default="Bilinear")
+        self.rotation_angle_entry = create_labeled_input("Rotation Angle:", 'entry', default="5")
+        self.output_format_entry = create_labeled_input("Output Format:", 'combobox', options=["png", "jpg", "jpeg", "bmp", "webp"], default="png")
+        # Creating a frame to hold the output path entry and browse button
+        output_path_frame = tk.Frame(self)
+        output_path_frame.grid(row=row, column=1, sticky='ew', padx=5, pady=5)
+        self.output_path_entry = tk.Entry(output_path_frame)
+        self.output_path_entry.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
 
-        self.browse_button = tk.Button(self, text="Browse", command=self.browse_output_path)
-        self.browse_button.pack()
+        # Browse button placed inside the frame, next to the output path entry
+        self.browse_button = tk.Button(output_path_frame, text="...", command=self.browse_output_path, width=3)
+        self.browse_button.pack(side=tk.LEFT, padx=(0, 5))
+
+        # Label for the output path
+        tk.Label(self, text="Output Path: (Leave Empty for Script's Directory)").grid(row=row, column=0, sticky='w', padx=5, pady=5)
+
+        row += 1
+
         self.submit_button = tk.Button(self, text="Submit", command=self.on_submit)
-        self.submit_button.pack()
+        self.submit_button.grid(row=row, column=0, columnspan=2, padx=5, pady=5)
 
     def browse_output_path(self):
         directory = filedialog.askdirectory()
@@ -345,7 +362,6 @@ class CustomDialog(tk.Toplevel):
             self.output_path_entry.delete(0, tk.END)
             self.output_path_entry.insert(0, directory)
 
-    # Update GUI defaults based on command-line arguments
     def update_gui_defaults(self, command_line_args):
         self.shrink_factor_entry.delete(0, tk.END)
         self.shrink_factor_entry.insert(0, str(command_line_args.shrink_factor))
@@ -360,11 +376,15 @@ class CustomDialog(tk.Toplevel):
         self.include_reverse_entry.set("yes" if command_line_args.include_reverse else "no")
         self.save_reversed_entry.set("yes" if command_line_args.save_reversed else "no")
 
-        self.resampling_method_entry.set(command_line_args.resampling_method)
+        self.resampling_method_entry.set(command_line_args.resampling_method.capitalize())
         self.rotation_angle_entry.delete(0, tk.END)
         self.rotation_angle_entry.insert(0, str(command_line_args.rotation_angle))
 
-        self.output_format_entry.set(command_line_args.output_format)
+        self.output_format_entry.set(command_line_args.output_format.lower())
+
+        if command_line_args.output_path:
+            self.output_path_entry.delete(0, tk.END)
+            self.output_path_entry.insert(0, command_line_args.output_path)
 
     def on_submit(self):
         try:
