@@ -11,6 +11,7 @@ import traceback
 from tkinter import filedialog, messagebox
 from PIL import Image
 from moviepy.editor import ImageSequenceClip, concatenate_videoclips, vfx
+from concurrent.futures import ThreadPoolExecutor
 
 def cleanup_temp_dir(temp_dir):
     try:
@@ -110,12 +111,11 @@ def create_videos(frame_paths, timelapse_video_path, reversed_clip_path, fps, in
 
 def create_droste_image_effect(image_path, output_path, shrink_factor, max_iterations, save_timelapse, fps, include_reverse, timelapse_video_path, reversed_clip_path, save_reversed, resampling_method, rotation_angle, output_format):
     start_time = time.time()
-    temp_dir = None
+    temp_dir = tempfile.mkdtemp()
     try:
         temp_dir = tempfile.mkdtemp()
         frame_paths, final_image = process_image_for_droste_effect(
-            image_path, temp_dir, shrink_factor, max_iterations, resampling_method, rotation_angle
-        )
+            image_path, temp_dir, shrink_factor, max_iterations, resampling_method, rotation_angle)
 
         if not frame_paths or final_image is None:
             return
@@ -128,13 +128,15 @@ def create_droste_image_effect(image_path, output_path, shrink_factor, max_itera
 
         # Create the time-lapse video and/or reversed clip if required
         if save_timelapse or save_reversed:
-            if not create_videos(frame_paths, timelapse_video_path, reversed_clip_path, fps, include_reverse, save_reversed):
+            success = create_videos(frame_paths, timelapse_video_path, reversed_clip_path, fps, include_reverse, save_reversed)
+            if not success:
                 print("Failed to create videos.")
             else:
-                if save_timelapse:
-                    print(f"Time-lapse video saved as {timelapse_video_path}")
-                if save_reversed:
-                    print(f"Reversed clip saved as {reversed_clip_path}")
+                with ThreadPoolExecutor() as executor:
+                    if save_timelapse:
+                        executor.submit(create_timelapse_video, frame_paths, timelapse_video_path, fps, include_reverse)
+                    if save_reversed:
+                        executor.submit(create_timelapse_video, frame_paths[::-1], reversed_clip_path, fps, False)
 
         # Display the chosen parameters
         print("\nChosen Parameters:")
@@ -152,9 +154,7 @@ def create_droste_image_effect(image_path, output_path, shrink_factor, max_itera
         print(f"An error occurred during image processing: {e}")
         traceback.print_exc()
     finally:
-        # Cleanup the temporary directory
-        if temp_dir:
-            cleanup_temp_dir(temp_dir)
+        cleanup_temp_dir(temp_dir)
         
         end_time = time.time()
         print(f"Total time for creating Droste effect: {end_time - start_time:.2f} seconds.")
@@ -189,11 +189,10 @@ def create_timelapse_video(frame_paths, output_filename, fps, include_reverse):
             final_clip = clip
 
         # Write the final clip to a file
-        final_clip.write_videofile(output_filename, codec='libx264', threads=4)
+        final_clip.write_videofile(output_filename, codec='libx264', threads=8)
     except Exception as e:
         print(f"An error occurred during video creation: {e}")
-        traceback.print_exc()
-        return False
+        raise
     finally:
         # Close the clip to release resources
         clip.close()
